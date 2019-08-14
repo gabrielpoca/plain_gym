@@ -1,6 +1,9 @@
 /** @jsx jsx */
-import { jsx } from "@emotion/core";
-import React from "react";
+import { jsx } from '@emotion/core';
+import React from 'react';
+
+import Typography from '@material-ui/core/Typography';
+import { makeStyles } from '@material-ui/core/styles';
 
 export interface TimerProps {
   start: Date;
@@ -33,6 +36,7 @@ export class Timer extends React.Component<TimerProps, {}> {
   };
 
   animate = () => {
+    if (!this.ref || !this.ref.current) return;
     if (this.period === 0) return requestAnimationFrame(this.animate);
     const seconds = Math.abs(
       (this.props.end.getTime() - new Date().getTime()) / 1000
@@ -47,43 +51,55 @@ export class Timer extends React.Component<TimerProps, {}> {
   };
 
   render() {
-    return (
-      <div
-        css={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          width: "100%",
-          background: "grey",
-          height: 50
-        }}
-      >
-        <div
-          ref={this.ref}
-          css={{
-            transition: "all 0.9s linear",
-            background: "red",
-            width: "100%",
-            transform: "translateX(-100%)",
-            height: "100%"
-          }}
-        />
-
-        <div
-          ref={this.labelRef}
-          css={{
-            position: "fixed",
-            left: 20,
-            bottom: 0,
-            color: "white",
-            height: 50,
-            display: "flex",
-            alignItems: "center",
-            fontSize: 20,
-            width: 100
-          }}
-        />
-      </div>
-    );
+    return <TimerBase backgroundRef={this.ref} labelRef={this.labelRef} />;
   }
 }
+
+const useStyles = makeStyles(theme => {
+  return {
+    root: {
+      position: 'fixed',
+      bottom: 0,
+      left: 0,
+      width: '100%',
+      background: theme.palette.grey.A100,
+      height: 50,
+    },
+    overlay: {
+      transition: 'all 0.9s linear',
+      background: theme.palette.secondary.main,
+      width: '100%',
+      transform: 'translateX(-100%)',
+      height: '100%',
+    },
+  };
+});
+
+interface TimerBaseProps {
+  backgroundRef: any;
+  labelRef: any;
+}
+
+const TimerBase = ({ backgroundRef, labelRef }: TimerBaseProps) => {
+  const classes = useStyles();
+
+  return (
+    <div className={classes.root}>
+      <div ref={backgroundRef} className={classes.overlay} />
+
+      <Typography
+        variant="h6"
+        ref={labelRef}
+        style={{
+          position: 'fixed',
+          left: 20,
+          bottom: 0,
+          height: 50,
+          display: 'flex',
+          alignItems: 'center',
+          width: 100,
+        }}
+      />
+    </div>
+  );
+};

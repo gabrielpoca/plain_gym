@@ -1,31 +1,68 @@
 {
-  "exercises": [
+  "workouts": [
     {
-      "id": 1,
-      "title": "Barbell rows",
-      "sets": 5,
-      "reps": 5,
-      "equipment": "Barbell",
-      "increment": true,
-      "rest": 90
+      "variant": "a",
+      "exercises": [
+        {
+          "id": "1",
+          "title": "barbell rows",
+          "sets": 5,
+          "reps": 5,
+          "equipment": "barbell",
+          "increment": true,
+          "rest": 90
+        },
+        {
+          "id": "2",
+          "title": "squats",
+          "sets": 5,
+          "reps": 5,
+          "equipment": "barbell",
+          "increment": true,
+          "rest": 90
+        },
+        {
+          "id": "3",
+          "title": "cable crunches",
+          "sets": 3,
+          "reps": 10,
+          "equipment": "cable machine",
+          "increment": true,
+          "rest": 30
+        }
+      ]
     },
     {
-      "id": 2,
-      "title": "Squats",
-      "sets": 5,
-      "reps": 5,
-      "equipment": "Barbell",
-      "increment": true,
-      "rest": 90
-    },
-    {
-      "id": 3,
-      "title": "Cable Crunches",
-      "sets": 3,
-      "reps": 10,
-      "equipment": "Cable Machine",
-      "increment": true,
-      "rest": 30
+      "variant": "b",
+      "exercises": [
+        {
+          "id": "4",
+          "title": "barbell rows b",
+          "sets": 5,
+          "reps": 5,
+          "equipment": "barbell",
+          "increment": true,
+          "rest": 90
+        },
+        {
+          "id": "5",
+          "title": "squats",
+          "sets": 5,
+          "reps": 5,
+          "equipment": "barbell c",
+          "increment": true,
+          "rest": 90
+        },
+        {
+          "id": "6",
+          "title": "cable crunches d",
+          "sets": 3,
+          "reps": 10,
+          "equipment": "cable machine",
+          "increment": true,
+          "rest": 30
+        }
+      ]
     }
   ]
 }
