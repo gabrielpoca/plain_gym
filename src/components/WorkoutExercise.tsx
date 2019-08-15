@@ -14,6 +14,9 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(2),
     marginBottom: theme.spacing(2),
   },
+  title: {
+    marginBottom: theme.spacing(2),
+  },
 }));
 
 interface CompletedReps {
@@ -29,6 +32,7 @@ interface Props {
   id: string;
   title: string;
   sets: number;
+  reps: number;
   selectedExerciseSet: string;
   completedReps: CompletedReps;
   onClick: (params: OnClickParams) => any;
@@ -36,6 +40,7 @@ interface Props {
 
 export function WorkoutExercise({
   sets,
+  reps,
   id,
   title,
   selectedExerciseSet,
@@ -47,8 +52,8 @@ export function WorkoutExercise({
   return (
     <li key={id} css={{ margin: 0, padding: 0 }}>
       <Paper className={classes.exercise}>
-        <Typography css={{ fontSize: 20, marginBottom: 10 }}>
-          {title}
+        <Typography className={classes.title}>
+          {title} {sets}x{reps}
         </Typography>
         <ol
           css={{

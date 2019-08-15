@@ -14,7 +14,7 @@ export interface Workout {
   exercises: WorkoutExercises;
 }
 
-export interface Exercise {
+export interface SettingsExercise {
   id: string;
   title: string;
   sets: number;
@@ -24,6 +24,11 @@ export interface Exercise {
   rest: number;
 }
 
+export interface SettingsWorkout {
+  variant: string;
+  exercises: SettingsExercise[];
+}
+
 export interface Settings {
-  exercises: Exercise[];
+  workouts: SettingsWorkout[];
 }

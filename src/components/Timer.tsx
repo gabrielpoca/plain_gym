@@ -46,7 +46,13 @@ export class Timer extends React.Component<TimerProps, {}> {
     );
     const value = Math.min(100 - percentage, 100);
     this.ref.current!.style.transform = `translateX(-${value}%)`;
-    this.labelRef.current!.innerHTML = `${Math.floor(this.period - seconds)}`;
+
+    if (Math.floor(this.period - seconds) !== 0)
+      this.labelRef.current!.innerHTML = `${Math.floor(
+        this.period - seconds
+      )}s`;
+    else this.labelRef.current!.innerHTML = ``;
+
     requestAnimationFrame(this.animate);
   };
 

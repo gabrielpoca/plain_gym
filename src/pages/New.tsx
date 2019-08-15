@@ -1,7 +1,8 @@
 /** @jsx jsx */
 import { jsx, keyframes } from '@emotion/core';
 import * as _ from 'lodash';
-import React, { useReducer, useState } from 'react';
+import React, { useReducer, useState, useEffect } from 'react';
+import { Redirect } from 'react-router-dom';
 
 import AppBar from '@material-ui/core/AppBar';
 import Button from '@material-ui/core/Button';
@@ -15,27 +16,33 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 
 import { Timer } from '../components/Timer';
 import { WorkoutExercise } from '../components/WorkoutExercise';
-import { Settings, Workout } from '../types';
-import { db } from '../db';
+import { Settings, Workout, SettingsWorkout, SettingsExercise } from '../types';
+import { db, useWorkout } from '../db';
 
 interface ReducerState {
-  settings: Settings;
-  workout: Workout;
+  settings?: SettingsWorkout;
+  workout?: Workout;
   selectedStart: Date;
   selectedEnd: Date;
   selectedExerciseSet: string;
 }
 
-type ReducerAction = {
+type SetAction = {
   type: 'set';
   exerciseId: string;
   setId: string;
   set: number;
 };
 
-interface NewProps {
+type LoadAction = {
+  type: 'load';
+  settings: SettingsWorkout;
   workout: Workout;
+};
+
+interface NewProps {
   settings: Settings;
+  id: string;
 }
 
 const useStyles = makeStyles(theme => ({
@@ -64,10 +71,17 @@ function getStartAndEndDate(rest: number) {
   return [selectedStart, selectedEnd];
 }
 
-function reducer(state: ReducerState, action: ReducerAction): ReducerState {
+function reducer(
+  state: ReducerState,
+  action: SetAction | LoadAction
+): ReducerState {
   switch (action.type) {
+    case 'load':
+      return { ...state, settings: action.settings, workout: action.workout };
     case 'set':
       const { workout, settings } = state;
+
+      if (!workout || !settings) return state;
 
       const workoutExercise = workout.exercises[action.exerciseId] || {};
       let { rest, reps } = _.find(settings.exercises, {
@@ -149,26 +163,40 @@ function Navbar({ workoutId }: { workoutId: string }) {
   );
 }
 
-export const New = ({ settings, workout }: NewProps) => {
+export const New = ({ settings, id }: NewProps) => {
+  const classes = useStyles();
+  const { workout, loading } = useWorkout(id)!;
+
   const [state, dispatch] = useReducer(reducer, {
-    workout,
-    settings,
     selectedStart: new Date(),
     selectedEnd: new Date(),
     selectedExerciseSet: '',
   });
-  const classes = useStyles();
+
+  useEffect(() => {
+    if (!workout) return;
+
+    const settingsWorkout = _.find(settings.workouts, {
+      variant: workout.variant,
+    })!;
+
+    dispatch({ type: 'load', workout, settings: settingsWorkout });
+  }, [workout]);
+
+  if (loading || !state.settings || !state.workout) return null;
+  if (workout && workout.state !== 'ongoing') return <Redirect to="/" />;
 
   return (
     <div className={classes.root}>
-      <Navbar workoutId={workout.id} />
+      <Navbar workoutId={state.workout.id} />
       <ul className={classes.list}>
-        {settings.exercises.map(exercise => (
+        {state.settings.exercises.map((exercise: SettingsExercise) => (
           <WorkoutExercise
             key={exercise.id}
             id={exercise.id}
             title={exercise.title}
             sets={exercise.sets}
+            reps={exercise.reps}
             selectedExerciseSet={state.selectedExerciseSet}
             completedReps={_.get(state, `workout.exercises.${exercise.id}`, {})}
             onClick={({ set, setId }) =>
@@ -186,7 +214,7 @@ export const New = ({ settings, workout }: NewProps) => {
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => cancelWorkout(state.workout.id)}
+          onClick={() => cancelWorkout(state.workout!.id)}
           css={{ marginRight: 20 }}
         >
           Cancel
@@ -194,7 +222,7 @@ export const New = ({ settings, workout }: NewProps) => {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => finishWorkout(state.workout)}
+          onClick={() => finishWorkout(state.workout!)}
         >
           Finish
         </Button>

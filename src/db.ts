@@ -71,17 +71,27 @@ export const useWorkouts = () => {
 };
 
 export const useWorkout = (filter: any) => {
-  const [workout, setWorkout] = useState<Workout>();
+  const [state, setState] = useState<{
+    loading: boolean;
+    err?: string;
+    workout?: Workout;
+  }>({ loading: true });
 
   useEffect(() => {
     let unmounted = false;
-    db.workouts.get(filter).then(setWorkout);
+    db.workouts
+      .get(filter)
+      .then(res => setState({ loading: false, workout: res }))
+      .catch(err => setState({ loading: false, err }));
 
     const subscription = observer.subscribe({
       next: async () => {
         if (unmounted) return;
 
-        db.workouts.get(filter).then(setWorkout);
+        db.workouts
+          .get(filter)
+          .then(res => setState({ loading: false, workout: res }))
+          .catch(err => setState({ loading: false, err: err.toString() }));
       },
     });
 
@@ -91,5 +101,5 @@ export const useWorkout = (filter: any) => {
     };
   }, []);
 
-  return workout;
+  return state;
 };

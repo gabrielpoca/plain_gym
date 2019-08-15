@@ -44,7 +44,7 @@ export function WorkoutSet({ reps, onClick, selected }: Props) {
   return (
     <li
       className={[classes.root, reps !== 0 ? classes.selected : null].join(' ')}
-      style={{
+      css={{
         animation: selected ? `${selectedKeyframe} 1s ease 1` : '',
       }}
     >
