@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx, keyframes } from '@emotion/core';
+import { jsx } from '@emotion/core';
 import React from 'react';
 import * as _ from 'lodash';
 
@@ -35,7 +35,8 @@ interface Props {
   reps: number;
   selectedExerciseSet: string;
   completedReps: CompletedReps;
-  onClick: (params: OnClickParams) => any;
+  onClick?: (params: OnClickParams) => any;
+  disabled?: boolean;
 }
 
 export function WorkoutExercise({
@@ -45,6 +46,7 @@ export function WorkoutExercise({
   title,
   selectedExerciseSet,
   completedReps,
+  disabled,
   onClick,
 }: Props) {
   const classes = useStyles();
@@ -69,10 +71,11 @@ export function WorkoutExercise({
 
             return (
               <WorkoutSet
+                disabled={!!disabled}
                 selected={selectedExerciseSet === setId}
                 key={time}
                 reps={_.get(completedReps, set, 0)}
-                onClick={() => onClick({ set, setId })}
+                onClick={() => onClick && onClick({ set, setId })}
               />
             );
           })}

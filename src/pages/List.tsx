@@ -1,21 +1,21 @@
 /** @jsx jsx */
-import React, { useEffect } from 'react';
+import * as _ from 'lodash';
+import React, { useContext } from 'react';
 import { jsx } from '@emotion/core';
 import { makeStyles } from '@material-ui/core/styles';
-import * as _ from 'lodash';
-import { Link, Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-import Button from '@material-ui/core/Button';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
+import PlayIcon from '@material-ui/icons/PlayArrow';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 
-import { useWorkouts, useWorkout, db } from '../db';
+import { DBContext } from '../db';
 import { Settings } from '../types';
 
 interface ListProps {
@@ -39,41 +39,13 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const nextWorkoutVariant = async (settings: Settings) => {
-  const result = await db.workouts
-    .where('state')
-    .equals('completed')
-    .reverse()
-    .sortBy('date');
-
-  const lastVariant = _.get(result[0], 'variant');
-
-  if (!lastVariant) {
-    return settings.workouts[0].variant;
-  } else {
-    const index = _.findIndex(settings.workouts, { variant: lastVariant });
-    if (index + 1 > settings.workouts.length - 1)
-      return settings.workouts[0].variant;
-    else return settings.workouts[index + 1].variant;
-  }
-};
-
-const startWorkout = async (settings: Settings) => {
-  await db.workouts.add({
-    id: `workout-${Math.random()}`,
-    state: 'ongoing',
-    date: new Date(),
-    variant: await nextWorkoutVariant(settings),
-    exercises: {},
-  });
-};
+const filter = { state: 'ongoing' };
 
 export function ListPage({ settings }: ListProps) {
+  const db = useContext(DBContext);
   const classes = useStyles();
-  const workouts = useWorkouts();
-  const { workout: ongoing } = useWorkout({ state: 'ongoing' });
-
-  if (ongoing) return <Redirect to={`/workouts/${ongoing.id}`} />;
+  const workouts = db!.useWorkouts();
+  const { workout: ongoing } = db!.useWorkout(filter);
 
   return (
     <div>
@@ -85,24 +57,54 @@ export function ListPage({ settings }: ListProps) {
         </Toolbar>
       </AppBar>
       <List className={classes.list}>
-        {workouts.map(workout => (
-          <ListItem
-            component={Link}
-            to={`/workouts/${workout.id}`}
-            key={workout.id}
-            button
-          >
-            <ListItemText>{workout.id}</ListItemText>
-          </ListItem>
-        ))}
+        {_.chain(workouts)
+          .sortBy('state')
+          .reverse()
+          .map(workout =>
+            workout.state === 'ongoing' ? (
+              <ListItem
+                component={Link}
+                to={`/workouts/${workout.id}`}
+                key={workout.id}
+                button
+              >
+                <ListItemText>
+                  ongoing: {workout.id} - {workout.date}
+                </ListItemText>
+              </ListItem>
+            ) : (
+              <ListItem
+                component={Link}
+                to={`/workouts/review/${workout.id}`}
+                key={workout.id}
+                button
+              >
+                <ListItemText>
+                  {workout.id} - {workout.date}
+                </ListItemText>
+              </ListItem>
+            )
+          )
+          .value()}
       </List>
-      <Fab
-        className={classes.fab}
-        color="primary"
-        onClick={() => startWorkout(settings)}
-      >
-        <AddIcon />
-      </Fab>
+      {ongoing ? (
+        <Fab
+          component={Link}
+          className={classes.fab}
+          color="primary"
+          to={`/workouts/${ongoing.id}`}
+        >
+          <PlayIcon />
+        </Fab>
+      ) : (
+        <Fab
+          className={classes.fab}
+          color="primary"
+          onClick={() => db && db.instance.workouts.startWorkout(settings)}
+        >
+          <AddIcon />
+        </Fab>
+      )}
     </div>
   );
 }

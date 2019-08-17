@@ -18,6 +18,7 @@ interface Props {
   reps: number;
   onClick: () => any;
   selected?: boolean;
+  disabled: boolean;
 }
 
 const useStyles = makeStyles(theme => {
@@ -38,7 +39,7 @@ const useStyles = makeStyles(theme => {
   };
 });
 
-export function WorkoutSet({ reps, onClick, selected }: Props) {
+export function WorkoutSet({ reps, onClick, selected, disabled }: Props) {
   const classes = useStyles();
 
   return (
@@ -49,6 +50,7 @@ export function WorkoutSet({ reps, onClick, selected }: Props) {
       }}
     >
       <button
+        disabled={disabled}
         onClick={onClick}
         css={{
           background: 'none',

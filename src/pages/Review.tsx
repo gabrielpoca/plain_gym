@@ -108,7 +108,7 @@ function reducer(
   }
 }
 
-export const New = ({ settings, id }: NewProps) => {
+export const Review = ({ settings, id }: NewProps) => {
   const classes = useStyles();
   const db = useContext(DBContext);
   const { workout } = db!.useWorkout(id)!;
@@ -128,24 +128,19 @@ export const New = ({ settings, id }: NewProps) => {
     dispatch({ type: 'startWorkout', workoutSettings: workoutSettings });
   }, [workout, settings.workouts]);
 
-  if (!workout || !state.workoutSettings)
-    return (
-      <div className={classes.root}>
-        <NewNavbar title="Ongoing" onDelete={() => null} />
-      </div>
-    );
-
-  if (workout.state !== 'ongoing') return <Redirect to="/" />;
+  if (!workout || !state.workoutSettings) return null;
+  if (workout.state === 'deleted') return <Redirect to="/" />;
 
   return (
     <div className={classes.root}>
       <NewNavbar
-        title="Ongoing"
+        title="Review"
         onDelete={() => workout.update({ $set: { state: 'deleted' } })}
       />
       <ul className={classes.list}>
         {state.workoutSettings.exercises.map((exercise: SettingsExercise) => (
           <WorkoutExercise
+            disabled
             key={exercise.id}
             id={exercise.id}
             title={exercise.title}
@@ -153,41 +148,9 @@ export const New = ({ settings, id }: NewProps) => {
             reps={exercise.reps}
             selectedExerciseSet={state.selectedExerciseSet}
             completedReps={_.get(workout.exercises, exercise.id, {})}
-            onClick={({ set, setId }) => {
-              const { rest } = updateWorkoutSet(
-                exercise.id,
-                set,
-                workout,
-                state.workoutSettings!
-              );
-
-              dispatch({
-                type: 'finishSet',
-                setId,
-                rest,
-              });
-            }}
           />
         ))}
       </ul>
-      <div css={{ position: 'fixed', bottom: 100, right: 20 }}>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => workout.update({ $set: { state: 'cancelled' } })}
-          css={{ marginRight: 20 }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => workout.update({ $set: { state: 'completed' } })}
-        >
-          Finish
-        </Button>
-      </div>
-      <Timer start={state.selectedStart} end={state.selectedEnd} />
     </div>
   );
 };
