@@ -7,7 +7,7 @@ import { Redirect } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { Timer } from '../components/Timer';
+import { exercises } from '../exercises'
 import { WorkoutExercise } from '../components/WorkoutExercise';
 import { NewNavbar } from '../components/NewNavbar';
 import { Settings, Workout, SettingsWorkout, SettingsExercise } from '../types';
@@ -143,7 +143,7 @@ export const Review = ({ settings, id }: NewProps) => {
             disabled
             key={exercise.id}
             id={exercise.id}
-            title={exercise.title}
+            title={exercises[exercise.id]}
             sets={exercise.sets}
             reps={exercise.reps}
             selectedExerciseSet={state.selectedExerciseSet}

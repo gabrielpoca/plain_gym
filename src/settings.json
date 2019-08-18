@@ -1,32 +1,48 @@
 {
+  "name": "Fierce 5",
   "workouts": [
     {
       "variant": "a",
       "exercises": [
         {
-          "id": "1",
-          "title": "barbell rows",
-          "sets": 5,
+          "id": "bench",
+          "sets": 3,
           "reps": 5,
-          "equipment": "barbell",
           "increment": true,
-          "rest": 90
+          "rest": 120
         },
         {
-          "id": "2",
-          "title": "squats",
-          "sets": 5,
-          "reps": 5,
-          "equipment": "barbell",
+          "id": "inclineBench",
+          "sets": 3,
+          "reps": 8,
           "increment": true,
-          "rest": 90
+          "rest": 120
         },
         {
-          "id": "3",
-          "title": "cable crunches",
+          "id": "latPulldowns",
+          "sets": 3,
+          "reps": 8,
+          "increment": true,
+          "rest": 120
+        },
+        {
+          "id": "bentOverRows",
+          "sets": 3,
+          "reps": 8,
+          "increment": true,
+          "rest": 120
+        },
+        {
+          "id": "curls",
           "sets": 3,
           "reps": 10,
-          "equipment": "cable machine",
+          "increment": true,
+          "rest": 30
+        },
+        {
+          "id": "reverseFlies",
+          "sets": 3,
+          "reps": 12,
           "increment": true,
           "rest": 30
         }
@@ -36,29 +52,91 @@
       "variant": "b",
       "exercises": [
         {
-          "id": "4",
-          "title": "barbell rows b",
-          "sets": 5,
+          "id": "squats",
+          "sets": 3,
           "reps": 5,
-          "equipment": "barbell",
           "increment": true,
-          "rest": 90
+          "rest": 120
         },
         {
-          "id": "5",
-          "title": "squats",
-          "sets": 5,
-          "reps": 5,
-          "equipment": "barbell c",
+          "id": "backExtensions",
+          "sets": 3,
+          "reps": 8,
           "increment": true,
-          "rest": 90
+          "rest": 30
         },
         {
-          "id": "6",
-          "title": "cable crunches d",
+          "id": "legPress",
           "sets": 3,
           "reps": 10,
-          "equipment": "cable machine",
+          "increment": true,
+          "rest": 30
+        },
+        {
+          "id": "legCurls",
+          "sets": 3,
+          "reps": 10,
+          "increment": true,
+          "rest": 30
+        },
+        {
+          "id": "abWork",
+          "sets": 3,
+          "reps": 15,
+          "increment": true,
+          "rest": 30
+        },
+        {
+          "id": "calfRaises",
+          "sets": 3,
+          "reps": 12,
+          "increment": true,
+          "rest": 30
+        }
+      ]
+    },
+    {
+      "variant": "c",
+      "exercises": [
+        {
+          "id": "overheadPress",
+          "sets": 3,
+          "reps": 5,
+          "increment": true,
+          "rest": 120
+        },
+        {
+          "id": "flies",
+          "sets": 3,
+          "reps": 10,
+          "increment": true,
+          "rest": 30
+        },
+        {
+          "id": "pullups",
+          "sets": 3,
+          "reps": 8,
+          "increment": true,
+          "rest": 30
+        },
+        {
+          "id": "pendlayRows",
+          "sets": 3,
+          "reps": 8,
+          "increment": true,
+          "rest": 30
+        },
+        {
+          "id": "facePulls",
+          "sets": 3,
+          "reps": 12,
+          "increment": true,
+          "rest": 30
+        },
+        {
+          "id": "tricepPressdowns",
+          "sets": 3,
+          "reps": 10,
           "increment": true,
           "rest": 30
         }

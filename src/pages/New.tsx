@@ -7,6 +7,7 @@ import { Redirect } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 
+import { exercises } from '../exercises';
 import { Timer } from '../components/Timer';
 import { WorkoutExercise } from '../components/WorkoutExercise';
 import { NewNavbar } from '../components/NewNavbar';
@@ -49,6 +50,13 @@ const useStyles = makeStyles(theme => ({
     margin: theme.spacing(2),
     padding: 0,
   },
+  actions: {
+    marginTop: theme.spacing(4),
+    paddingRight: theme.spacing(2),
+    marginBottom: theme.spacing(10),
+    display: 'flex',
+    justifyContent: 'flex-end',
+  }
 }));
 
 function getStartAndEndDate(rest: number) {
@@ -95,6 +103,8 @@ function reducer(
       return { ...state, workoutSettings: action.workoutSettings };
     }
     case 'finishSet': {
+      if (state.selectedExerciseSet === action.setId) return state;
+
       const [selectedStart, selectedEnd] = getStartAndEndDate(action.rest);
 
       return _.merge({}, state, {
@@ -148,7 +158,7 @@ export const New = ({ settings, id }: NewProps) => {
           <WorkoutExercise
             key={exercise.id}
             id={exercise.id}
-            title={exercise.title}
+            title={exercises[exercise.id] as string}
             sets={exercise.sets}
             reps={exercise.reps}
             selectedExerciseSet={state.selectedExerciseSet}
@@ -170,7 +180,7 @@ export const New = ({ settings, id }: NewProps) => {
           />
         ))}
       </ul>
-      <div css={{ position: 'fixed', bottom: 100, right: 20 }}>
+      <div className={classes.actions}>
         <Button
           variant="contained"
           color="secondary"

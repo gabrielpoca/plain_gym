@@ -39,34 +39,37 @@ export function NewNavbar({
   const classes = useStyles();
 
   return (
-    <AppBar position="static">
-      <Toolbar>
-        <Link to="/" className={classes.button}>
-          <IconButton edge="start" color="inherit" aria-label="close">
-            <CloseIcon />
+    <React.Fragment>
+      <div style={{ height: 60 }} />
+      <AppBar position="fixed">
+        <Toolbar>
+          <Link to="/" className={classes.button}>
+            <IconButton edge="start" color="inherit" aria-label="close">
+              <CloseIcon />
+            </IconButton>
+          </Link>
+          <Typography variant="h6" className={classes.title}>
+            {title}
+          </Typography>
+          <IconButton
+            aria-label="More"
+            aria-owns={state.menuOpen ? 'long-menu' : undefined}
+            aria-haspopup="true"
+            onClick={e => setState({ menuOpen: true, anchorEl: e.currentTarget })}
+          >
+            <MoreVertIcon />
           </IconButton>
-        </Link>
-        <Typography variant="h6" className={classes.title}>
-          {title}
-        </Typography>
-        <IconButton
-          aria-label="More"
-          aria-owns={state.menuOpen ? 'long-menu' : undefined}
-          aria-haspopup="true"
-          onClick={e => setState({ menuOpen: true, anchorEl: e.currentTarget })}
-        >
-          <MoreVertIcon />
-        </IconButton>
-        <Menu
-          onClose={() => setState({ menuOpen: false, anchorEl: undefined })}
-          onClick={onDelete}
-          anchorEl={state.anchorEl}
-          id="menu"
-          open={state.menuOpen}
-        >
-          <MenuItem>Delete</MenuItem>
-        </Menu>
-      </Toolbar>
-    </AppBar>
+          <Menu
+            onClose={() => setState({ menuOpen: false, anchorEl: undefined })}
+            onClick={onDelete}
+            anchorEl={state.anchorEl}
+            id="menu"
+            open={state.menuOpen}
+          >
+            <MenuItem>Delete</MenuItem>
+          </Menu>
+        </Toolbar>
+      </AppBar>
+    </React.Fragment>
   );
 }

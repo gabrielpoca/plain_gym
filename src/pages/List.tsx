@@ -1,19 +1,23 @@
 /** @jsx jsx */
 import * as _ from 'lodash';
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { jsx } from '@emotion/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link } from 'react-router-dom';
 
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
-import PlayIcon from '@material-ui/icons/PlayArrow';
+import AppBar from '@material-ui/core/AppBar';
+import Fab from '@material-ui/core/Fab';
+import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import MenuIcon from '@material-ui/icons/Menu';
+import PlayIcon from '@material-ui/icons/PlayArrow';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
 
 import { DBContext } from '../db';
 import { Settings } from '../types';
@@ -37,11 +41,23 @@ const useStyles = makeStyles(theme => ({
   list: {
     paddingTop: 70,
   },
+  ongoing: {
+    display: 'inline',
+    fontSize: theme.typography.fontSize,
+    marginLeft: theme.spacing(1),
+  },
+  menuButton: {
+    marginRight: theme.spacing(1),
+  },
+  drawer: {
+    width: 250,
+  },
 }));
 
 const filter = { state: 'ongoing' };
 
 export function ListPage({ settings }: ListProps) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const db = useContext(DBContext);
   const classes = useStyles();
   const workouts = db!.useWorkouts();
@@ -51,11 +67,41 @@ export function ListPage({ settings }: ListProps) {
     <div>
       <AppBar position="fixed">
         <Toolbar>
+          <IconButton
+            edge="start"
+            className={classes.menuButton}
+            color="inherit"
+            aria-label="menu"
+            onClick={() => setDrawerOpen(true)}
+          >
+            <MenuIcon />
+          </IconButton>
           <Typography variant="h6" className={classes.title}>
             Gym
           </Typography>
         </Toolbar>
       </AppBar>
+      <SwipeableDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onOpen={() => setDrawerOpen(true)}
+      >
+        <div
+          className={classes.drawer}
+          role="presentation"
+          onClick={() => setDrawerOpen(false)}
+          onKeyDown={() => setDrawerOpen(false)}
+        >
+          <List>
+            <ListItem>
+              <ListItemIcon>
+                <AddIcon />
+              </ListItemIcon>
+              <ListItemText>Vamos</ListItemText>
+            </ListItem>
+          </List>
+        </div>
+      </SwipeableDrawer>
       <List className={classes.list}>
         {_.chain(workouts)
           .sortBy('state')
@@ -68,9 +114,17 @@ export function ListPage({ settings }: ListProps) {
                 key={workout.id}
                 button
               >
-                <ListItemText>
-                  ongoing: {workout.id} - {workout.date}
-                </ListItemText>
+                <ListItemText
+                  primary={
+                    <div>
+                      Workout {workout.variant.toUpperCase()}
+                      <Typography className={classes.ongoing} color="secondary">
+                        ONGOING
+                      </Typography>
+                    </div>
+                  }
+                  secondary={workout.date}
+                />
               </ListItem>
             ) : (
               <ListItem
@@ -79,9 +133,10 @@ export function ListPage({ settings }: ListProps) {
                 key={workout.id}
                 button
               >
-                <ListItemText>
-                  {workout.id} - {workout.date}
-                </ListItemText>
+                <ListItemText
+                  primary={<div>Workout {workout.variant.toUpperCase()}</div>}
+                  secondary={workout.date}
+                />
               </ListItem>
             )
           )

@@ -14,6 +14,7 @@ export interface WorkoutDocType {
   date: string;
   state: string;
   exercises: WorkoutExercises;
+  modelType: string;
 }
 
 export type Workout = RxDocument<WorkoutDocType, {}>;
@@ -30,10 +31,8 @@ export type WorkoutCollection = RxCollection<
 
 export interface SettingsExercise {
   id: string;
-  title: string;
   sets: number;
   reps: number;
-  equipment?: string;
   increment: boolean;
   rest: number;
 }

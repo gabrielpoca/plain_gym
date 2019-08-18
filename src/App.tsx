@@ -20,7 +20,11 @@ const App = () => {
       <DBContextProvider>
         <Router>
           <CssBaseline />
-          <Global styles={css``} />
+          <Global styles={css`
+            body {
+              overscroll-behavior: none;
+            }            
+          `} />
           <Route
             path="/workouts/review/:id"
             exact
