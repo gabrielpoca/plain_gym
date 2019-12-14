@@ -1,33 +1,21 @@
 import React, { useEffect, useState, FunctionComponent } from 'react';
 import * as _ from 'lodash';
-import RxDB, { RxCollection, RxJsonSchema, RxDatabase } from 'rxdb';
-import PouchDB from 'pouchdb';
+import RxDB, { RxJsonSchema, RxDatabase } from 'rxdb';
 import PouchDBIDB from 'pouchdb-adapter-idb';
 import { format } from 'date-fns';
 import uuid from 'uuid/v4';
+
+import { setupSync } from './database/sync';
 
 import {
   Workout,
   Settings,
   WorkoutDocType,
-  WorkoutCollection,
+  WorkoutDatabaseCollections,
   WorkoutCollectionMethods,
 } from './types';
 
 import * as api from './api';
-
-const asciiToHex = (str: string) => {
-  var arr1 = [];
-  for (var n = 0, l = str.length; n < l; n++) {
-    var hex = Number(str.charCodeAt(n)).toString(16);
-    arr1.push(hex);
-  }
-  return arr1.join('');
-};
-
-type WorkoutDatabaseCollections = {
-  workouts: WorkoutCollection;
-};
 
 RxDB.plugin(PouchDBIDB);
 
@@ -190,50 +178,9 @@ export const getDB = async () => {
       )
       .then(({ data }) => {
         localStorage.setItem('couchToken', data.couch_token);
-        runPouch();
+        setupSync(db);
       });
-  else runPouch();
-
-  async function runPouch() {
-    try {
-      const dbName = `https://couch.gabrielpoca.com/userdb-${asciiToHex(
-        'gabasdfasd@test.com'
-      )}`;
-      const remoteDB = new PouchDB(dbName, {
-        fetch: function(url, opts) {
-          // @ts-ignore
-          opts.headers!['X-Auth-CouchDB-UserName'] = 'gabriel@test.com';
-          // @ts-ignore
-          opts.headers!['X-Auth-CouchDB-Token'] = localStorage.getItem(
-            'couchToken'
-          );
-          return PouchDB.fetch(url, opts);
-        },
-      });
-
-      try {
-        await remoteDB.put({
-          _id: '_design/gym',
-          filters: {
-            workouts: `function(doc) {
-              return (doc._id === '_design/gym' || doc.modelType === 'workout');
-            }`,
-          },
-        });
-      } catch (e) {}
-      db.workouts.sync({
-        remote: remoteDB,
-        // @ts-ignore
-        options: {
-          live: true,
-          retry: true,
-          filter: 'gym/workouts',
-        },
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  }
+  else setupSync(db);
 
   return {
     instance: db,

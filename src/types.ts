@@ -29,6 +29,10 @@ export type WorkoutCollection = RxCollection<
   WorkoutCollectionMethods
 >;
 
+export type WorkoutDatabaseCollections = {
+  workouts: WorkoutCollection;
+};
+
 export interface SettingsExercise {
   id: number;
   sets: number;
