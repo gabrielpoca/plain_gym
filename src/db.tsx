@@ -72,15 +72,16 @@ export const getDB = async () => {
   };
 
   const workoutCollectionMethods: WorkoutCollectionMethods = {
-    startWorkout: async (settings: Settings) =>
-      db.workouts.insert({
+    startWorkout: async (settings: Settings) => {
+      return db.workouts.insert({
         id: `workout-${uuid()}`,
         state: 'ongoing',
         date: format(new Date(), 'YYYY-MM-DD'),
         variant: await nextWorkoutVariant(settings),
         exercises: {},
         modelType: 'workout',
-      }),
+      });
+    },
   };
 
   await db.collection({

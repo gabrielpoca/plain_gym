@@ -1,9 +1,9 @@
 /** @jsx jsx */
 import * as _ from 'lodash';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { jsx } from '@emotion/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 
 import AddIcon from '@material-ui/icons/Add';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
@@ -58,7 +58,7 @@ const useStyles = makeStyles(theme => ({
   },
   drawer: {
     width: 250,
-    paddingTop: theme.spacing(2),
+    paddingTop: theme.spacing(8),
   },
 }));
 
@@ -93,11 +93,21 @@ function Sidebar({ open, onClose, onOpen }: SidebarProps) {
 }
 
 export function ListPage({ settings }: ListProps) {
+  const [startWorkout, setStartWorkout] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const db = useContext(DBContext);
   const classes = useStyles();
   const workouts = db!.useWorkouts();
   const { workout: ongoing } = db!.useWorkout(filter);
+
+  useEffect(() => {
+    if (!startWorkout || ongoing) return;
+
+    db!.instance.workouts.startWorkout(settings);
+  }, [startWorkout, ongoing, db, settings]);
+
+  if (startWorkout && ongoing)
+    return <Redirect to={`/workouts/${ongoing.id}`} />;
 
   return (
     <div>
@@ -175,7 +185,7 @@ export function ListPage({ settings }: ListProps) {
         <Fab
           className={classes.fab}
           color="primary"
-          onClick={() => db && db.instance.workouts.startWorkout(settings)}
+          onClick={() => setStartWorkout(true)}
         >
           <AddIcon />
         </Fab>
