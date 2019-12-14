@@ -11,6 +11,7 @@ import {
 import settings from './settings.json';
 import { New } from './pages/New';
 import { ListPage } from './pages/List';
+import { SignIn, SignUp } from './pages/Account';
 import { Review } from './pages/Review';
 import { DBContextProvider } from './db';
 
@@ -20,11 +21,27 @@ const App = () => {
       <DBContextProvider>
         <Router>
           <CssBaseline />
-          <Global styles={css`
-            body {
-              overscroll-behavior: none;
-            }            
-          `} />
+          <Global
+            styles={css`
+              body {
+                overscroll-behavior: none;
+              }
+            `}
+          />
+          <Route
+            path="/sign-up"
+            exact
+            render={() => {
+              return <SignUp />;
+            }}
+          />
+          <Route
+            path="/sign-in"
+            exact
+            render={() => {
+              return <SignIn />;
+            }}
+          />
           <Route
             path="/workouts/review/:id"
             exact

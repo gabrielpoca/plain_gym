@@ -6,6 +6,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Link } from 'react-router-dom';
 
 import AddIcon from '@material-ui/icons/Add';
+import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import AppBar from '@material-ui/core/AppBar';
 import Fab from '@material-ui/core/Fab';
 import IconButton from '@material-ui/core/IconButton';
@@ -24,6 +25,12 @@ import { Settings } from '../types';
 
 interface ListProps {
   settings: Settings;
+}
+
+interface SidebarProps {
+  open: boolean;
+  onClose: () => any;
+  onOpen: () => any;
 }
 
 const useStyles = makeStyles(theme => ({
@@ -51,10 +58,39 @@ const useStyles = makeStyles(theme => ({
   },
   drawer: {
     width: 250,
+    paddingTop: theme.spacing(2),
   },
 }));
 
 const filter = { state: 'ongoing' };
+
+function Sidebar({ open, onClose, onOpen }: SidebarProps) {
+  const classes = useStyles();
+
+  return (
+    <SwipeableDrawer
+      open={open}
+      onClose={() => onClose()}
+      onOpen={() => onOpen()}
+    >
+      <div
+        className={classes.drawer}
+        role="presentation"
+        onClick={() => onClose()}
+        onKeyDown={() => onClose()}
+      >
+        <List>
+          <ListItem component={Link} to="/sign-up">
+            <ListItemIcon>
+              <AccountCircleIcon />
+            </ListItemIcon>
+            <ListItemText>Account</ListItemText>
+          </ListItem>
+        </List>
+      </div>
+    </SwipeableDrawer>
+  );
+}
 
 export function ListPage({ settings }: ListProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -81,27 +117,11 @@ export function ListPage({ settings }: ListProps) {
           </Typography>
         </Toolbar>
       </AppBar>
-      <SwipeableDrawer
+      <Sidebar
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
         onOpen={() => setDrawerOpen(true)}
-      >
-        <div
-          className={classes.drawer}
-          role="presentation"
-          onClick={() => setDrawerOpen(false)}
-          onKeyDown={() => setDrawerOpen(false)}
-        >
-          <List>
-            <ListItem>
-              <ListItemIcon>
-                <AddIcon />
-              </ListItemIcon>
-              <ListItemText>Vamos</ListItemText>
-            </ListItem>
-          </List>
-        </div>
-      </SwipeableDrawer>
+        onClose={() => setDrawerOpen(false)}
+      />
       <List className={classes.list}>
         {_.chain(workouts)
           .sortBy('state')
