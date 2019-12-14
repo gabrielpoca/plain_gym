@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core';
 import React from 'react';
-
+import { fade } from '@material-ui/core/styles/colorManipulator';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -99,7 +99,7 @@ const useStyles = makeStyles(theme => {
       bottom: 0,
       left: 0,
       width: '100%',
-      background: theme.palette.grey.A100,
+      background: fade(theme.palette.grey[900], 0.5),
       height: 50,
     },
     overlay: {
