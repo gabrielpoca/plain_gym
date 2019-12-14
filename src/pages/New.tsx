@@ -56,7 +56,7 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(10),
     display: 'flex',
     justifyContent: 'flex-end',
-  }
+  },
 }));
 
 function getStartAndEndDate(rest: number) {
@@ -68,7 +68,7 @@ function getStartAndEndDate(rest: number) {
 }
 
 function updateWorkoutSet(
-  exerciseId: string,
+  exerciseId: number,
   set: number,
   workout: Workout,
   workoutSettings: SettingsWorkout
@@ -158,7 +158,7 @@ export const New = ({ settings, id }: NewProps) => {
           <WorkoutExercise
             key={exercise.id}
             id={exercise.id}
-            title={exercises[exercise.id] as string}
+            title={exercises[exercise.id].name}
             sets={exercise.sets}
             reps={exercise.reps}
             selectedExerciseSet={state.selectedExerciseSet}

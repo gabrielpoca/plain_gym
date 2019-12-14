@@ -1,43 +1,21 @@
-const allExercises = [
-  'Bench with Dumbells',
-  'Incline Bench with Dumbells',
-  'Lat Pulldowns',
-  'Bent Over Rows',
-  'Curls',
-  'Reverse Flies',
-  'Squats',
-  'Weighted Back Extensions',
-  'Leg Press',
-  'Leg Curls',
-  'Ab work',
-  'Calf raises',
-  'Overhead Press',
-  'Flies',
-  'Pullups',
-  'Pendlay Rows',
-  'Face Pulls',
-  'Tricep Pressdowns',
-  'Front Squat',
-  'Romanian Deadlift',
-  'Leg Extensions',
-  'Leg Curls',
-];
+import _ from 'lodash';
+import exercisesDataset from './dataset/exercises.json';
+
+interface Exercise {
+  name: string;
+  description: string;
+  equipment: number[];
+}
 
 interface Exercises {
-  [id: string]: string;
+  [id: number]: Exercise;
 }
 
-function camelize(str: string) {
-  return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function (match, index) {
-    if (+match === 0) return '';
-    return index === 0 ? match.toLowerCase() : match.toUpperCase();
-  });
-}
+export const exercises: Exercises = exercisesDataset
+  .filter(e => _.get(e, 'fields.language', 0) === 2)
+  .reduce((memo: Exercises, e) => {
+    if (!e.fields.name) return memo;
 
-export const exercises = allExercises.reduce(
-  (memo: Exercises, title: string) => {
-    memo[camelize(title)] = title;
+    memo[e.pk] = _.pick(e.fields, ['name', 'description', 'equipment']);
     return memo;
-  },
-  {} as Exercises
-);
+  }, {});

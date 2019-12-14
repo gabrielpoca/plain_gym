@@ -29,7 +29,7 @@ interface OnClickParams {
 }
 
 interface Props {
-  id: string;
+  id: number;
   title: string;
   sets: number;
   reps: number;

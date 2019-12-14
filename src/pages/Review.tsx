@@ -7,7 +7,7 @@ import { Redirect } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { exercises } from '../exercises'
+import { exercises } from '../exercises';
 import { WorkoutExercise } from '../components/WorkoutExercise';
 import { NewNavbar } from '../components/NewNavbar';
 import { Settings, Workout, SettingsWorkout, SettingsExercise } from '../types';
@@ -60,7 +60,7 @@ function getStartAndEndDate(rest: number) {
 }
 
 function updateWorkoutSet(
-  exerciseId: string,
+  exerciseId: number,
   set: number,
   workout: Workout,
   workoutSettings: SettingsWorkout
@@ -143,7 +143,7 @@ export const Review = ({ settings, id }: NewProps) => {
             disabled
             key={exercise.id}
             id={exercise.id}
-            title={exercises[exercise.id]}
+            title={exercises[exercise.id].name}
             sets={exercise.sets}
             reps={exercise.reps}
             selectedExerciseSet={state.selectedExerciseSet}

@@ -30,7 +30,7 @@ export type WorkoutCollection = RxCollection<
 >;
 
 export interface SettingsExercise {
-  id: string;
+  id: number;
   sets: number;
   reps: number;
   increment: boolean;
