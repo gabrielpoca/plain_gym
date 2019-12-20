@@ -1,17 +1,20 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core';
-import * as _ from 'lodash';
+import merge from 'lodash/merge';
+import find from 'lodash/find';
+import get from 'lodash/get';
 import React, { useReducer, useEffect, useContext } from 'react';
 import { Redirect } from 'react-router-dom';
 
-import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { exercises } from '../exercises';
 import { WorkoutExercise } from '../components/WorkoutExercise';
 import { NewNavbar } from '../components/NewNavbar';
-import { Settings, Workout, SettingsWorkout, SettingsExercise } from '../types';
+import { Settings, SettingsWorkout, SettingsExercise } from '../types';
 import { DBContext } from '../db';
+
+import { useWorkout } from '../hooks/workouts';
 
 interface ReducerState {
   workoutSettings?: SettingsWorkout;
@@ -59,33 +62,6 @@ function getStartAndEndDate(rest: number) {
   return [selectedStart, selectedEnd];
 }
 
-function updateWorkoutSet(
-  exerciseId: number,
-  set: number,
-  workout: Workout,
-  workoutSettings: SettingsWorkout
-): { rest: number } {
-  const workoutExercise = workout.exercises[exerciseId] || {};
-
-  let { rest, reps } = _.find(workoutSettings.exercises, {
-    id: exerciseId,
-  }) || { rest: 0, reps: 0 };
-
-  if (workoutExercise[set]) reps = Math.max(workoutExercise[set] - 1, 0);
-
-  workout.update({
-    $set: {
-      exercises: _.merge(workout.exercises, {
-        [exerciseId]: {
-          [set]: reps,
-        },
-      }),
-    },
-  });
-
-  return { rest };
-}
-
 function reducer(
   state: ReducerState,
   action: FinishSetAction | StartWorkoutAction
@@ -97,7 +73,7 @@ function reducer(
     case 'finishSet': {
       const [selectedStart, selectedEnd] = getStartAndEndDate(action.rest);
 
-      return _.merge({}, state, {
+      return merge({}, state, {
         selectedEnd,
         selectedStart,
         selectedExerciseSet: action.setId,
@@ -111,7 +87,7 @@ function reducer(
 export const Review = ({ settings, id }: NewProps) => {
   const classes = useStyles();
   const db = useContext(DBContext);
-  const { workout } = db!.useWorkout(id)!;
+  const { workout } = useWorkout(db!.instance, id)!;
   const [state, dispatch] = useReducer(reducer, {
     selectedStart: new Date(),
     selectedEnd: new Date(),
@@ -121,7 +97,7 @@ export const Review = ({ settings, id }: NewProps) => {
   useEffect(() => {
     if (!workout) return;
 
-    const workoutSettings = _.find(settings.workouts, {
+    const workoutSettings = find(settings.workouts, {
       variant: workout.variant,
     })!;
 
@@ -147,7 +123,7 @@ export const Review = ({ settings, id }: NewProps) => {
             sets={exercise.sets}
             reps={exercise.reps}
             selectedExerciseSet={state.selectedExerciseSet}
-            completedReps={_.get(workout.exercises, exercise.id, {})}
+            completedReps={get(workout.exercises, exercise.id, {})}
           />
         ))}
       </ul>

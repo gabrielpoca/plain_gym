@@ -24,6 +24,8 @@ import Container from '@material-ui/core/Container';
 import { DBContext } from '../db';
 import { Settings } from '../types';
 
+import { useWorkout, useWorkouts } from '../hooks/workouts';
+
 interface ListProps {
   settings: Settings;
 }
@@ -104,8 +106,8 @@ export function ListPage({ settings }: ListProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const db = useContext(DBContext);
   const classes = useStyles();
-  const workouts = db!.useWorkouts();
-  const { workout: ongoing } = db!.useWorkout(filter);
+  const workouts = useWorkouts(db!.instance);
+  const { workout: ongoing } = useWorkout(db!.instance, filter);
 
   useEffect(() => {
     if (!startWorkout || ongoing) return;

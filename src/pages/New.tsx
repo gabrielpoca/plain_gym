@@ -14,6 +14,8 @@ import { NewNavbar } from '../components/NewNavbar';
 import { Settings, Workout, SettingsWorkout, SettingsExercise } from '../types';
 import { DBContext } from '../db';
 
+import { useWorkout } from '../hooks/workouts';
+
 interface ReducerState {
   workoutSettings?: SettingsWorkout;
   selectedStart: Date;
@@ -121,7 +123,7 @@ function reducer(
 export const New = ({ settings, id }: NewProps) => {
   const classes = useStyles();
   const db = useContext(DBContext);
-  const { workout } = db!.useWorkout(id)!;
+  const { workout } = useWorkout(db!.instance, id)!;
   const [state, dispatch] = useReducer(reducer, {
     selectedStart: new Date(),
     selectedEnd: new Date(),

@@ -59,6 +59,26 @@ export const getDB = async () => {
     compoundIndexes: [['state', 'date']],
   };
 
+  const nextWorkoutVariant = async function(settings: Settings) {
+    const lastCompletedWorkout = await db.workouts
+      .findOne()
+      .where('state')
+      .equals('completed')
+      .sort('date')
+      .exec();
+
+    const lastVariant = _.get(lastCompletedWorkout, 'variant');
+
+    if (!lastVariant) {
+      return settings.workouts[0].variant;
+    } else {
+      const index = _.findIndex(settings.workouts, { variant: lastVariant });
+      if (index + 1 > settings.workouts.length - 1)
+        return settings.workouts[0].variant;
+      else return settings.workouts[index + 1].variant;
+    }
+  };
+
   const workoutCollectionMethods: WorkoutCollectionMethods = {
     startWorkout: async (settings: Settings) => {
       return db.workouts.insert({
@@ -97,75 +117,6 @@ export const getDB = async () => {
     if (ongoing) throw new Error('There is already an ongoing workout');
   }, false);
 
-  const nextWorkoutVariant = async function(settings: Settings) {
-    const lastCompletedWorkout = await db.workouts
-      .findOne()
-      .where('state')
-      .equals('completed')
-      .sort('date')
-      .exec();
-
-    const lastVariant = _.get(lastCompletedWorkout, 'variant');
-
-    if (!lastVariant) {
-      return settings.workouts[0].variant;
-    } else {
-      const index = _.findIndex(settings.workouts, { variant: lastVariant });
-      if (index + 1 > settings.workouts.length - 1)
-        return settings.workouts[0].variant;
-      else return settings.workouts[index + 1].variant;
-    }
-  };
-
-  const useWorkouts = () => {
-    const [workouts, setWorkouts] = useState<Workout[]>([]);
-
-    useEffect(() => {
-      let unmounted = false;
-      const query = db.workouts
-        .find()
-        .where('state')
-        .in(['completed', 'ongoing'])
-        .sort('date');
-
-      const subscription = query.$.subscribe(
-        result => !unmounted && setWorkouts(result)
-      );
-
-      return () => {
-        unmounted = true;
-        subscription.unsubscribe();
-      };
-    }, []);
-
-    return workouts;
-  };
-
-  const useWorkout = (filter: any) => {
-    const [state, setState] = useState<{
-      workout?: Workout;
-    }>({});
-
-    useEffect(() => {
-      let unmounted = false;
-
-      const query = db.workouts.findOne(filter);
-
-      const subscription = query.$.subscribe(result => {
-        if (unmounted) return;
-        if (result) setState({ workout: result || undefined });
-        else setState({});
-      });
-
-      return () => {
-        unmounted = true;
-        subscription.unsubscribe();
-      };
-    }, [filter]);
-
-    return state;
-  };
-
   if (!localStorage.getItem('couchToken'))
     api
       .signIn({
@@ -184,15 +135,11 @@ export const getDB = async () => {
 
   return {
     instance: db,
-    useWorkout,
-    useWorkouts,
   };
 };
 
 interface DBInterface {
   instance: RxDatabase<WorkoutDatabaseCollections>;
-  useWorkouts: () => Workout[];
-  useWorkout: (filter: any) => { workout: Workout };
 }
 
 export const DBContext = React.createContext<DBInterface | null>(null);
