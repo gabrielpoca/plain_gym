@@ -13,6 +13,7 @@ import { New } from './pages/New';
 import { ListPage } from './pages/List';
 import { SignIn, SignUp } from './pages/Account';
 import { Review } from './pages/Review';
+import { Builder } from './pages/Builder';
 import { DBContextProvider } from './db';
 
 const App = () => {
@@ -54,6 +55,13 @@ const App = () => {
             exact
             render={(props: RouteComponentProps<{ id: string }>) => {
               return <New settings={settings} id={props.match.params.id} />;
+            }}
+          />
+          <Route
+            path="/builder"
+            exact
+            render={() => {
+              return <Builder />;
             }}
           />
           <Route

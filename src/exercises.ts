@@ -2,6 +2,7 @@ import _ from 'lodash';
 import exercisesDataset from './dataset/exercises.json';
 
 interface Exercise {
+  id: number;
   name: string;
   description: string;
   equipment: number[];
@@ -16,6 +17,9 @@ export const exercises: Exercises = exercisesDataset
   .reduce((memo: Exercises, e) => {
     if (!e.fields.name) return memo;
 
-    memo[e.pk] = _.pick(e.fields, ['name', 'description', 'equipment']);
+    memo[e.pk] = {
+      ..._.pick(e.fields, ['name', 'description', 'equipment']),
+      id: e.pk,
+    };
     return memo;
   }, {});

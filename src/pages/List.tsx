@@ -19,6 +19,7 @@ import PlayIcon from '@material-ui/icons/PlayArrow';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
+import Container from '@material-ui/core/Container';
 
 import { DBContext } from '../db';
 import { Settings } from '../types';
@@ -86,6 +87,12 @@ function Sidebar({ open, onClose, onOpen }: SidebarProps) {
             </ListItemIcon>
             <ListItemText>Account</ListItemText>
           </ListItem>
+          <ListItem component={Link} to="/builder">
+            <ListItemIcon>
+              <AccountCircleIcon />
+            </ListItemIcon>
+            <ListItemText>Builder</ListItemText>
+          </ListItem>
         </List>
       </div>
     </SwipeableDrawer>
@@ -132,64 +139,69 @@ export function ListPage({ settings }: ListProps) {
         onOpen={() => setDrawerOpen(true)}
         onClose={() => setDrawerOpen(false)}
       />
-      <List className={classes.list}>
-        {_.chain(workouts)
-          .sortBy('state')
-          .reverse()
-          .map(workout =>
-            workout.state === 'ongoing' ? (
-              <ListItem
-                component={Link}
-                to={`/workouts/${workout.id}`}
-                key={workout.id}
-                button
-              >
-                <ListItemText
-                  primary={
-                    <div>
-                      Workout {workout.variant.toUpperCase()}
-                      <Typography className={classes.ongoing} color="secondary">
-                        ONGOING
-                      </Typography>
-                    </div>
-                  }
-                  secondary={workout.date}
-                />
-              </ListItem>
-            ) : (
-              <ListItem
-                component={Link}
-                to={`/workouts/review/${workout.id}`}
-                key={workout.id}
-                button
-              >
-                <ListItemText
-                  primary={<div>Workout {workout.variant.toUpperCase()}</div>}
-                  secondary={workout.date}
-                />
-              </ListItem>
+      <Container>
+        <List className={classes.list}>
+          {_.chain(workouts)
+            .sortBy('state')
+            .reverse()
+            .map(workout =>
+              workout.state === 'ongoing' ? (
+                <ListItem
+                  component={Link}
+                  to={`/workouts/${workout.id}`}
+                  key={workout.id}
+                  button
+                >
+                  <ListItemText
+                    primary={
+                      <div>
+                        Workout {workout.variant.toUpperCase()}
+                        <Typography
+                          className={classes.ongoing}
+                          color="secondary"
+                        >
+                          ONGOING
+                        </Typography>
+                      </div>
+                    }
+                    secondary={workout.date}
+                  />
+                </ListItem>
+              ) : (
+                <ListItem
+                  component={Link}
+                  to={`/workouts/review/${workout.id}`}
+                  key={workout.id}
+                  button
+                >
+                  <ListItemText
+                    primary={<div>Workout {workout.variant.toUpperCase()}</div>}
+                    secondary={workout.date}
+                  />
+                </ListItem>
+              )
             )
-          )
-          .value()}
-      </List>
-      {ongoing ? (
-        <Fab
-          component={Link}
-          className={classes.fab}
-          color="primary"
-          to={`/workouts/${ongoing.id}`}
-        >
-          <PlayIcon />
-        </Fab>
-      ) : (
-        <Fab
-          className={classes.fab}
-          color="primary"
-          onClick={() => setStartWorkout(true)}
-        >
-          <AddIcon />
-        </Fab>
-      )}
+            .value()}
+        </List>
+        {ongoing ? (
+          <Fab
+            component={Link}
+            className={classes.fab}
+            color="primary"
+            to={`/workouts/${ongoing.id}`}
+          >
+            <PlayIcon />
+          </Fab>
+        ) : (
+          <Fab
+            className={classes.fab}
+            color="primary"
+            onClick={() => setStartWorkout(true)}
+          >
+            <AddIcon />
+          </Fab>
+        )}
+      </Container>
     </div>
   );
 }
