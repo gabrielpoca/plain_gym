@@ -8,7 +8,7 @@ import {
   RouteComponentProps,
 } from 'react-router-dom';
 
-import settings from './settings.json';
+//import settings from './settings.json';
 import { New } from './pages/New';
 import { ListPage } from './pages/List';
 import { SignIn, SignUp } from './pages/Account';
@@ -47,14 +47,14 @@ const App = () => {
             path="/workouts/review/:id"
             exact
             render={(props: RouteComponentProps<{ id: string }>) => {
-              return <Review settings={settings} id={props.match.params.id} />;
+              return <Review id={props.match.params.id} />;
             }}
           />
           <Route
             path="/workouts/:id"
             exact
             render={(props: RouteComponentProps<{ id: string }>) => {
-              return <New settings={settings} id={props.match.params.id} />;
+              return <New id={props.match.params.id} />;
             }}
           />
           <Route
@@ -64,11 +64,7 @@ const App = () => {
               return <Builder />;
             }}
           />
-          <Route
-            path="/"
-            exact
-            render={() => <ListPage settings={settings} />}
-          />
+          <Route path="/" exact render={() => <ListPage />} />
         </Router>
       </DBContextProvider>
     </div>

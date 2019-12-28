@@ -1,6 +1,6 @@
 import { RxDocument, RxCollection } from 'rxdb';
 
-interface WorkoutExercise {
+export interface WorkoutExercise {
   [set: number]: number;
 }
 
@@ -10,14 +10,29 @@ interface WorkoutExercises {
 
 export interface WorkoutDocType {
   id: string;
-  variant: string;
   date: string;
-  state: string;
   exercises: WorkoutExercises;
+  settings: SettingsDocType;
+  state: string;
   modelType: string;
 }
 
+export interface SettingsExercise {
+  id: number;
+  sets: number;
+  exerciseId: number;
+  multi: boolean;
+  reps: number[];
+}
+
+export interface SettingsDocType {
+  id: string;
+  rest: number;
+  exercises: SettingsExercise[];
+}
+
 export type Workout = RxDocument<WorkoutDocType, {}>;
+export type Settings = RxDocument<SettingsDocType, {}>;
 
 export type WorkoutCollectionMethods = {
   startWorkout: (settings: Settings) => Promise<Workout>;
@@ -29,23 +44,9 @@ export type WorkoutCollection = RxCollection<
   WorkoutCollectionMethods
 >;
 
+export type SettingsCollection = RxCollection<SettingsDocType, {}, {}>;
+
 export type WorkoutDatabaseCollections = {
   workouts: WorkoutCollection;
+  settings: SettingsCollection;
 };
-
-export interface SettingsExercise {
-  id: number;
-  sets: number;
-  reps: number;
-  increment: boolean;
-  rest: number;
-}
-
-export interface SettingsWorkout {
-  variant: string;
-  exercises: SettingsExercise[];
-}
-
-export interface Settings {
-  workouts: SettingsWorkout[];
-}

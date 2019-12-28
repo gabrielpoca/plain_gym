@@ -1,5 +1,6 @@
 import values from 'lodash/values';
 import range from 'lodash/range';
+import find from 'lodash/find';
 import React from 'react';
 import { useDrag, useDrop, DropTargetMonitor } from 'react-dnd';
 import update from 'immutability-helper';
@@ -37,17 +38,16 @@ function SetsPicker(props: SetsPickerInterface) {
         const newValue = parseInt(event.target.value);
         props.onChange({ sets: !newValue || newValue < 0 ? 0 : newValue });
       }}
+      variant="outlined"
       label="Sets"
       type="number"
-      style={{ width: 40 }}
+      style={{ width: 50 }}
     />
   );
 }
 
 interface RepsPickerInterface {
-  reps: {
-    value: number[];
-  };
+  reps: number[];
   count: number;
   onChange: (params: any) => any;
 }
@@ -58,22 +58,21 @@ function RepsPicker({ reps, onChange, count }: RepsPickerInterface) {
       {range(count).map((index: number) => (
         <Grid key={index} item md={1} sm={2} xs={4}>
           <TextField
-            value={reps.value[index]}
+            value={reps[index]}
+            variant="outlined"
             onChange={event => {
               const newValue = parseInt(event.target.value);
               onChange({
                 reps: update(reps, {
-                  value: {
-                    $splice: [
-                      [index, 1, !newValue || newValue < 0 ? 0 : newValue],
-                    ],
-                  },
+                  $splice: [
+                    [index, 1, !newValue || newValue < 0 ? 0 : newValue],
+                  ],
                 }),
               });
             }}
             label={'Reps ' + (index + 1)}
             type="number"
-            style={{ width: 50 }}
+            style={{ width: 60 }}
           />
         </Grid>
       ))}
@@ -84,7 +83,6 @@ function RepsPicker({ reps, onChange, count }: RepsPickerInterface) {
 const useStyles = makeStyles(theme => ({
   root: {
     padding: theme.spacing(4),
-    paddingLeft: theme.spacing(5),
     marginBottom: theme.spacing(4),
     cursor: 'pointer',
   },
@@ -94,28 +92,22 @@ export function ExercisePicker({
   id,
   index,
   multi,
-  exercise,
+  exerciseId,
   sets,
   reps,
   moveExercise,
-  dispatch,
-  onRemove,
+  removeExercise,
+  updateExercise,
 }: {
   id: number;
-  exercise?: {
-    id: number;
-    name: string;
-  };
+  exerciseId: number;
   multi: boolean;
   sets: number;
-  reps: {
-    multi: boolean;
-    value: number[];
-  };
+  reps: number[];
   index: number;
   moveExercise: (dragIndex: number, hoverIndex: number) => any;
-  dispatch: (params: any) => any;
-  onRemove: () => any;
+  removeExercise: (id: number) => any;
+  updateExercise: (index: number, change: any) => any;
 }) {
   const classes = useStyles();
   const ref = React.useRef(null);
@@ -148,7 +140,7 @@ export function ExercisePicker({
     <Paper
       ref={ref}
       className={classes.root}
-      style={{ opacity: isDragging ? 0 : 1 }}
+      style={{ opacity: isDragging ? 0.5 : 1 }}
     >
       <Grid
         style={{ cursor: 'default' }}
@@ -160,14 +152,10 @@ export function ExercisePicker({
           <Autocomplete
             options={exercisesList}
             getOptionLabel={option => option.name}
-            style={{ width: 300 }}
-            value={exercise}
+            style={{ maxWidth: 300 }}
+            value={find(exercises, { id: exerciseId })}
             onChange={(_e, newValue) =>
-              dispatch({
-                type: 'UPDATE_EXERCISE',
-                index,
-                change: { exercise: newValue },
-              })
+              updateExercise(index, { exerciseId: newValue.id })
             }
             renderInput={(params: any) => (
               <TextField
@@ -179,18 +167,12 @@ export function ExercisePicker({
             )}
           />
         </Grid>
-        <Grid item xs={multi ? 12 : 4}>
+        <Grid item xs={12}>
           <FormControlLabel
             control={
               <Switch
                 checked={!!multi}
-                onChange={() =>
-                  dispatch({
-                    type: 'UPDATE_EXERCISE',
-                    index,
-                    change: { multi: !multi },
-                  })
-                }
+                onChange={() => updateExercise(index, { multi: !multi })}
                 value="checkedB"
               />
             }
@@ -200,21 +182,17 @@ export function ExercisePicker({
         <Grid item md={1} xs={12}>
           <SetsPicker
             value={sets}
-            onChange={change =>
-              dispatch({ type: 'UPDATE_EXERCISE', index, change })
-            }
+            onChange={change => updateExercise(index, change)}
           />
         </Grid>
         <RepsPicker
-          onChange={change =>
-            dispatch({ type: 'UPDATE_EXERCISE', index, change })
-          }
+          onChange={change => updateExercise(index, change)}
           reps={reps}
           count={multi ? sets : 1}
         />
       </Grid>
       <Box marginTop={3}>
-        <Button onClick={() => onRemove()}>Remove</Button>
+        <Button onClick={() => removeExercise(id)}>Remove</Button>
       </Box>
     </Paper>
   );

@@ -1,12 +1,14 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core';
 import React from 'react';
-import * as _ from 'lodash';
+import times from 'lodash/times';
+import get from 'lodash/get';
 
 import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 
+import { exercises } from '../exercises';
 import { WorkoutSet } from './WorkoutSet';
 
 const useStyles = makeStyles(theme => ({
@@ -30,10 +32,11 @@ interface OnClickParams {
 
 interface Props {
   id: number;
-  title: string;
+  multi: boolean;
   sets: number;
-  reps: number;
-  selectedExerciseSet: string;
+  exerciseId: number;
+  reps: number[];
+  selectedExerciseSet?: string;
   completedReps: CompletedReps;
   onClick?: (params: OnClickParams) => any;
   disabled?: boolean;
@@ -41,21 +44,23 @@ interface Props {
 
 export function WorkoutExercise({
   sets,
+  multi,
   reps,
   id,
-  title,
+  exerciseId,
   selectedExerciseSet,
   completedReps,
   disabled,
   onClick,
 }: Props) {
   const classes = useStyles();
+  const title = exercises[exerciseId].name;
 
   return (
     <li key={id} css={{ margin: 0, padding: 0 }}>
       <Paper className={classes.exercise}>
         <Typography className={classes.title}>
-          {title} {sets}x{reps}
+          {title} {sets}x{multi ? '' : reps[0]}
         </Typography>
         <ol
           css={{
@@ -65,17 +70,17 @@ export function WorkoutExercise({
             padding: 0,
           }}
         >
-          {_.times(sets).map(time => {
-            const set = time + 1;
-            const setId = `${id}-${set}`;
+          {times(sets).map(time => {
+            const setId = `${id}-${time}`;
 
             return (
               <WorkoutSet
                 disabled={!!disabled}
                 selected={selectedExerciseSet === setId}
                 key={time}
-                reps={_.get(completedReps, set, 0)}
-                onClick={() => onClick && onClick({ set, setId })}
+                reps={multi ? reps[time] : reps[0]}
+                completedReps={get(completedReps, time)}
+                onClick={() => onClick && onClick({ set: time, setId })}
               />
             );
           })}

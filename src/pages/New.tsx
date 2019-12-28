@@ -1,32 +1,27 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core';
-import * as _ from 'lodash';
-import React, { useReducer, useEffect, useContext } from 'react';
+import get from 'lodash/get';
+import merge from 'lodash/merge';
+import React, { useReducer, useContext } from 'react';
 import { Redirect } from 'react-router-dom';
+import update from 'immutability-helper';
 
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { exercises } from '../exercises';
 import { Timer } from '../components/Timer';
 import { WorkoutExercise } from '../components/WorkoutExercise';
 import { NewNavbar } from '../components/NewNavbar';
-import { Settings, Workout, SettingsWorkout, SettingsExercise } from '../types';
+import { SettingsExercise } from '../types';
 import { DBContext } from '../db';
 
 import { useWorkout } from '../hooks/workouts';
 
 interface ReducerState {
-  workoutSettings?: SettingsWorkout;
   selectedStart: Date;
   selectedEnd: Date;
   selectedExerciseSet: string;
 }
-
-type StartWorkoutAction = {
-  type: 'startWorkout';
-  workoutSettings: SettingsWorkout;
-};
 
 type FinishSetAction = {
   type: 'finishSet';
@@ -35,7 +30,6 @@ type FinishSetAction = {
 };
 
 interface NewProps {
-  settings: Settings;
   id: string;
 }
 
@@ -69,47 +63,14 @@ function getStartAndEndDate(rest: number) {
   return [selectedStart, selectedEnd];
 }
 
-function updateWorkoutSet(
-  exerciseId: number,
-  set: number,
-  workout: Workout,
-  workoutSettings: SettingsWorkout
-): { rest: number } {
-  const workoutExercise = workout.exercises[exerciseId] || {};
-
-  let { rest, reps } = _.find(workoutSettings.exercises, {
-    id: exerciseId,
-  }) || { rest: 0, reps: 0 };
-
-  if (workoutExercise[set]) reps = Math.max(workoutExercise[set] - 1, 0);
-
-  workout.update({
-    $set: {
-      exercises: _.merge(workout.exercises, {
-        [exerciseId]: {
-          [set]: reps,
-        },
-      }),
-    },
-  });
-
-  return { rest };
-}
-
-function reducer(
-  state: ReducerState,
-  action: FinishSetAction | StartWorkoutAction
-): ReducerState {
+function reducer(state: ReducerState, action: FinishSetAction): ReducerState {
   switch (action.type) {
-    case 'startWorkout': {
-      return { ...state, workoutSettings: action.workoutSettings };
-    }
     case 'finishSet': {
       if (state.selectedExerciseSet === action.setId) return state;
 
       const [selectedStart, selectedEnd] = getStartAndEndDate(action.rest);
 
-      return _.merge({}, state, {
+      return merge({}, state, {
         selectedEnd,
         selectedStart,
         selectedExerciseSet: action.setId,
@@ -120,27 +81,54 @@ function reducer(
   }
 }
 
-export const New = ({ settings, id }: NewProps) => {
+export const New = ({ id }: NewProps) => {
   const classes = useStyles();
   const db = useContext(DBContext);
-  const { workout } = useWorkout(db!.instance, id)!;
+  const workout = useWorkout(db!, id)!;
   const [state, dispatch] = useReducer(reducer, {
     selectedStart: new Date(),
     selectedEnd: new Date(),
     selectedExerciseSet: '',
   });
 
-  useEffect(() => {
-    if (!workout) return;
+  const updateSet = React.useCallback(
+    (set: number, setId: string, exercise: SettingsExercise) => {
+      const current = get(workout.exercises, `${exercise.id}.${set}`);
 
-    const workoutSettings = _.find(settings.workouts, {
-      variant: workout.variant,
-    })!;
+      const next =
+        current && +current - 1 >= 0 ? +current - 1 : exercise.reps[set];
 
-    dispatch({ type: 'startWorkout', workoutSettings: workoutSettings });
-  }, [workout, settings.workouts]);
+      const currentWorkout = workout.toJSON();
 
-  if (!workout || !state.workoutSettings)
+      const currentExercise = update(
+        currentWorkout.exercises[exercise.id] || {},
+        {
+          $merge: {
+            [set]: next,
+          },
+        }
+      );
+
+      workout.update({
+        $set: update(currentWorkout, {
+          exercises: {
+            $merge: {
+              [exercise.id]: currentExercise,
+            },
+          },
+        }),
+      });
+
+      dispatch({
+        type: 'finishSet',
+        setId,
+        rest: workout.settings.rest,
+      });
+    },
+    [workout]
+  );
+
+  if (!workout)
     return (
       <div className={classes.root}>
         <NewNavbar title="Ongoing" onDelete={() => null} />
@@ -156,28 +144,18 @@ export const New = ({ settings, id }: NewProps) => {
         onDelete={() => workout.update({ $set: { state: 'deleted' } })}
       />
       <ul className={classes.list}>
-        {state.workoutSettings.exercises.map((exercise: SettingsExercise) => (
+        {workout.settings.exercises.map(exercise => (
           <WorkoutExercise
             key={exercise.id}
             id={exercise.id}
-            title={exercises[exercise.id].name}
+            exerciseId={exercise.exerciseId}
+            multi={exercise.multi}
             sets={exercise.sets}
             reps={exercise.reps}
             selectedExerciseSet={state.selectedExerciseSet}
-            completedReps={_.get(workout.exercises, exercise.id, {})}
+            completedReps={get(workout.exercises, exercise.id, {})}
             onClick={({ set, setId }) => {
-              const { rest } = updateWorkoutSet(
-                exercise.id,
-                set,
-                workout,
-                state.workoutSettings!
-              );
-
-              dispatch({
-                type: 'finishSet',
-                setId,
-                rest,
-              });
+              updateSet(set, setId, exercise);
             }}
           />
         ))}

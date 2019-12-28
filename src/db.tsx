@@ -1,15 +1,15 @@
 import React, { useEffect, useState, FunctionComponent } from 'react';
-import * as _ from 'lodash';
 import RxDB, { RxJsonSchema, RxDatabase } from 'rxdb';
 import PouchDBIDB from 'pouchdb-adapter-idb';
 import { format } from 'date-fns';
 import uuid from 'uuid/v4';
+import update from 'immutability-helper';
 
 import { setupSync } from './database/sync';
 
 import {
-  Workout,
   Settings,
+  SettingsDocType,
   WorkoutDocType,
   WorkoutDatabaseCollections,
   WorkoutCollectionMethods,
@@ -19,6 +19,39 @@ import * as api from './api';
 
 RxDB.plugin(PouchDBIDB);
 
+const settingsJSONSchema: any = {
+  id: {
+    type: 'string',
+  },
+  rest: {
+    type: 'number',
+  },
+  exercises: {
+    type: 'array',
+    items: {
+      type: 'object',
+      required: ['id', 'sets', 'reps'],
+      properties: {
+        id: {
+          type: 'number',
+        },
+        multi: {
+          type: 'boolean',
+        },
+        sets: {
+          type: 'number',
+        },
+        reps: {
+          type: 'array',
+          items: {
+            type: 'number',
+          },
+        },
+      },
+    },
+  },
+};
+
 export const getDB = async () => {
   const db = await RxDB.create<WorkoutDatabaseCollections>({
     name: 'workouts',
@@ -27,7 +60,7 @@ export const getDB = async () => {
 
   const workoutSchema: RxJsonSchema<WorkoutDocType> = {
     title: 'Workouts Schema',
-    version: 2,
+    version: 0,
     type: 'object',
     properties: {
       id: {
@@ -44,8 +77,9 @@ export const getDB = async () => {
         index: true,
         format: 'date',
       },
-      variant: {
-        type: 'string',
+      settings: {
+        type: 'object',
+        properties: settingsJSONSchema,
       },
       exercises: {
         type: 'object',
@@ -59,34 +93,24 @@ export const getDB = async () => {
     compoundIndexes: [['state', 'date']],
   };
 
-  const nextWorkoutVariant = async function(settings: Settings) {
-    const lastCompletedWorkout = await db.workouts
-      .findOne()
-      .where('state')
-      .equals('completed')
-      .sort('date')
-      .exec();
-
-    const lastVariant = _.get(lastCompletedWorkout, 'variant');
-
-    if (!lastVariant) {
-      return settings.workouts[0].variant;
-    } else {
-      const index = _.findIndex(settings.workouts, { variant: lastVariant });
-      if (index + 1 > settings.workouts.length - 1)
-        return settings.workouts[0].variant;
-      else return settings.workouts[index + 1].variant;
-    }
+  const settingsSchema: RxJsonSchema<SettingsDocType> = {
+    title: 'Settings Schema',
+    version: 0,
+    type: 'object',
+    required: ['id', 'rest', 'exercises'],
+    properties: update(settingsJSONSchema, {
+      id: { $merge: { primary: true } },
+    }),
   };
 
   const workoutCollectionMethods: WorkoutCollectionMethods = {
     startWorkout: async (settings: Settings) => {
       return db.workouts.insert({
         id: `workout-${uuid()}`,
-        state: 'ongoing',
         date: format(new Date(), 'YYYY-MM-DD'),
-        variant: await nextWorkoutVariant(settings),
         exercises: {},
+        settings: settings.toJSON(),
+        state: 'ongoing',
         modelType: 'workout',
       });
     },
@@ -96,13 +120,12 @@ export const getDB = async () => {
     name: 'workouts',
     schema: workoutSchema,
     statics: workoutCollectionMethods,
-    migrationStrategies: {
-      1: (fn: any) => fn,
-      2: (doc: WorkoutDocType) => {
-        doc.modelType = 'workout';
-        return doc;
-      },
-    },
+    migrationStrategies: {},
+  });
+
+  await db.collection({
+    name: 'settings',
+    schema: settingsSchema,
   });
 
   db.workouts.preInsert(async (plainData: WorkoutDocType) => {
@@ -117,32 +140,12 @@ export const getDB = async () => {
     if (ongoing) throw new Error('There is already an ongoing workout');
   }, false);
 
-  if (!localStorage.getItem('couchToken'))
-    api
-      .signIn({
-        session: { email: 'gabasdfasd@test.com', password: 'random' },
-      })
-      .catch(() =>
-        api.signUp({
-          user: { email: 'gabasdfasd@test.com', password: 'random' },
-        })
-      )
-      .then(({ data }) => {
-        localStorage.setItem('couchToken', data.couch_token);
-        setupSync(db);
-      });
-  else setupSync(db);
-
-  return {
-    instance: db,
-  };
+  return db;
 };
 
-interface DBInterface {
-  instance: RxDatabase<WorkoutDatabaseCollections>;
-}
-
-export const DBContext = React.createContext<DBInterface | null>(null);
+export const DBContext = React.createContext<RxDatabase<
+  WorkoutDatabaseCollections
+> | null>(null);
 
 export const DBContextProvider: FunctionComponent<{}> = props => {
   const [db, setDB] = useState();

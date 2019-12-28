@@ -7,21 +7,15 @@ export const useWorkouts = (db: RxDatabase<WorkoutDatabaseCollections>) => {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
 
   useEffect(() => {
-    let unmounted = false;
     const query = db.workouts
       .find()
       .where('state')
       .in(['completed', 'ongoing'])
       .sort('date');
 
-    const subscription = query.$.subscribe(
-      result => !unmounted && setWorkouts(result)
-    );
+    const subscription = query.$.subscribe(result => setWorkouts(result));
 
-    return () => {
-      unmounted = true;
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [db.workouts]);
 
   return workouts;
@@ -52,5 +46,5 @@ export const useWorkout = (
     };
   }, [filter, db.workouts]);
 
-  return state;
+  return state.workout;
 };

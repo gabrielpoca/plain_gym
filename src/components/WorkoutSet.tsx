@@ -16,6 +16,7 @@ const selectedKeyframe = keyframes`
 
 interface Props {
   reps: number;
+  completedReps?: number;
   onClick: () => any;
   selected?: boolean;
   disabled: boolean;
@@ -39,12 +40,20 @@ const useStyles = makeStyles(theme => {
   };
 });
 
-export function WorkoutSet({ reps, onClick, selected, disabled }: Props) {
+export function WorkoutSet({
+  reps,
+  completedReps,
+  onClick,
+  selected,
+  disabled,
+}: Props) {
   const classes = useStyles();
 
   return (
     <li
-      className={[classes.root, reps !== 0 ? classes.selected : null].join(' ')}
+      className={[classes.root, completedReps ? classes.selected : null].join(
+        ' '
+      )}
       css={{
         animation: selected ? `${selectedKeyframe} 1s ease 1` : '',
       }}
@@ -61,7 +70,7 @@ export function WorkoutSet({ reps, onClick, selected, disabled }: Props) {
           height: '100%',
         }}
       >
-        {reps === 0 ? null : reps}
+        {completedReps ? completedReps : reps}
       </button>
     </li>
   );

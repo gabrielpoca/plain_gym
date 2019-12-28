@@ -1,5 +1,6 @@
 /** @jsx jsx */
-import * as _ from 'lodash';
+import sortBy from 'lodash/sortBy';
+import reverse from 'lodash/reverse';
 import React, { useContext, useState, useEffect } from 'react';
 import { jsx } from '@emotion/core';
 import { makeStyles } from '@material-ui/core/styles';
@@ -22,13 +23,9 @@ import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
 import Container from '@material-ui/core/Container';
 
 import { DBContext } from '../db';
-import { Settings } from '../types';
 
 import { useWorkout, useWorkouts } from '../hooks/workouts';
-
-interface ListProps {
-  settings: Settings;
-}
+import { useSettings } from '../hooks/settings';
 
 interface SidebarProps {
   open: boolean;
@@ -93,7 +90,7 @@ function Sidebar({ open, onClose, onOpen }: SidebarProps) {
             <ListItemIcon>
               <AccountCircleIcon />
             </ListItemIcon>
-            <ListItemText>Builder</ListItemText>
+            <ListItemText>Workout Settings</ListItemText>
           </ListItem>
         </List>
       </div>
@@ -101,18 +98,19 @@ function Sidebar({ open, onClose, onOpen }: SidebarProps) {
   );
 }
 
-export function ListPage({ settings }: ListProps) {
+export function ListPage() {
   const [startWorkout, setStartWorkout] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const db = useContext(DBContext);
   const classes = useStyles();
-  const workouts = useWorkouts(db!.instance);
-  const { workout: ongoing } = useWorkout(db!.instance, filter);
+  const workouts = useWorkouts(db!);
+  const ongoing = useWorkout(db!, filter);
+  const settings = useSettings();
 
   useEffect(() => {
-    if (!startWorkout || ongoing) return;
+    if (!startWorkout || ongoing || !settings) return;
 
-    db!.instance.workouts.startWorkout(settings);
+    db!.workouts.startWorkout(settings);
   }, [startWorkout, ongoing, db, settings]);
 
   if (startWorkout && ongoing)
@@ -143,47 +141,40 @@ export function ListPage({ settings }: ListProps) {
       />
       <Container>
         <List className={classes.list}>
-          {_.chain(workouts)
-            .sortBy('state')
-            .reverse()
-            .map(workout =>
-              workout.state === 'ongoing' ? (
-                <ListItem
-                  component={Link}
-                  to={`/workouts/${workout.id}`}
-                  key={workout.id}
-                  button
-                >
-                  <ListItemText
-                    primary={
-                      <div>
-                        Workout {workout.variant.toUpperCase()}
-                        <Typography
-                          className={classes.ongoing}
-                          color="secondary"
-                        >
-                          ONGOING
-                        </Typography>
-                      </div>
-                    }
-                    secondary={workout.date}
-                  />
-                </ListItem>
-              ) : (
-                <ListItem
-                  component={Link}
-                  to={`/workouts/review/${workout.id}`}
-                  key={workout.id}
-                  button
-                >
-                  <ListItemText
-                    primary={<div>Workout {workout.variant.toUpperCase()}</div>}
-                    secondary={workout.date}
-                  />
-                </ListItem>
-              )
+          {reverse(sortBy(workouts, 'state')).map(workout =>
+            workout.state === 'ongoing' ? (
+              <ListItem
+                component={Link}
+                to={`/workouts/${workout.id}`}
+                key={workout.id}
+                button
+              >
+                <ListItemText
+                  primary={
+                    <div>
+                      Workout {workout.id}
+                      <Typography className={classes.ongoing} color="secondary">
+                        ONGOING
+                      </Typography>
+                    </div>
+                  }
+                  secondary={workout.date}
+                />
+              </ListItem>
+            ) : (
+              <ListItem
+                component={Link}
+                to={`/workouts/review/${workout.id}`}
+                key={workout.id}
+                button
+              >
+                <ListItemText
+                  primary={<div>Workout {workout.id}</div>}
+                  secondary={workout.date}
+                />
+              </ListItem>
             )
-            .value()}
+          )}
         </List>
         {ongoing ? (
           <Fab

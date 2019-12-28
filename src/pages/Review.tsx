@@ -1,23 +1,21 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core';
 import merge from 'lodash/merge';
-import find from 'lodash/find';
 import get from 'lodash/get';
-import React, { useReducer, useEffect, useContext } from 'react';
+import React, { useContext } from 'react';
 import { Redirect } from 'react-router-dom';
 
 import { makeStyles } from '@material-ui/core/styles';
 
-import { exercises } from '../exercises';
 import { WorkoutExercise } from '../components/WorkoutExercise';
 import { NewNavbar } from '../components/NewNavbar';
-import { Settings, SettingsWorkout, SettingsExercise } from '../types';
+import { Settings } from '../types';
 import { DBContext } from '../db';
 
 import { useWorkout } from '../hooks/workouts';
 
 interface ReducerState {
-  workoutSettings?: SettingsWorkout;
+  workoutSettings?: Settings;
   selectedStart: Date;
   selectedEnd: Date;
   selectedExerciseSet: string;
@@ -25,7 +23,7 @@ interface ReducerState {
 
 type StartWorkoutAction = {
   type: 'startWorkout';
-  workoutSettings: SettingsWorkout;
+  workoutSettings: Settings;
 };
 
 type FinishSetAction = {
@@ -35,7 +33,6 @@ type FinishSetAction = {
 };
 
 interface NewProps {
-  settings: Settings;
   id: string;
 }
 
@@ -84,45 +81,29 @@ function reducer(
   }
 }
 
-export const Review = ({ settings, id }: NewProps) => {
+export const Review = ({ id }: NewProps) => {
   const classes = useStyles();
   const db = useContext(DBContext);
-  const { workout } = useWorkout(db!.instance, id)!;
-  const [state, dispatch] = useReducer(reducer, {
-    selectedStart: new Date(),
-    selectedEnd: new Date(),
-    selectedExerciseSet: '',
-  });
+  const workout = useWorkout(db!, id)!;
 
-  useEffect(() => {
-    if (!workout) return;
-
-    const workoutSettings = find(settings.workouts, {
-      variant: workout.variant,
-    })!;
-
-    dispatch({ type: 'startWorkout', workoutSettings: workoutSettings });
-  }, [workout, settings.workouts]);
-
-  if (!workout || !state.workoutSettings) return null;
+  if (!workout) return null;
   if (workout.state === 'deleted') return <Redirect to="/" />;
 
   return (
     <div className={classes.root}>
       <NewNavbar
-        title="Review"
+        title="Ongoing"
         onDelete={() => workout.update({ $set: { state: 'deleted' } })}
       />
       <ul className={classes.list}>
-        {state.workoutSettings.exercises.map((exercise: SettingsExercise) => (
+        {workout.settings.exercises.map(exercise => (
           <WorkoutExercise
-            disabled
             key={exercise.id}
             id={exercise.id}
-            title={exercises[exercise.id].name}
+            exerciseId={exercise.exerciseId}
+            multi={exercise.multi}
             sets={exercise.sets}
             reps={exercise.reps}
-            selectedExerciseSet={state.selectedExerciseSet}
             completedReps={get(workout.exercises, exercise.id, {})}
           />
         ))}
