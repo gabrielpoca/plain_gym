@@ -28,22 +28,14 @@ export interface SettingsExercise {
 export interface SettingsDocType {
   id: string;
   rest: number;
+  active: boolean;
   exercises: SettingsExercise[];
 }
 
 export type Workout = RxDocument<WorkoutDocType, {}>;
 export type Settings = RxDocument<SettingsDocType, {}>;
 
-export type WorkoutCollectionMethods = {
-  startWorkout: (settings: Settings) => Promise<Workout>;
-};
-
-export type WorkoutCollection = RxCollection<
-  WorkoutDocType,
-  {},
-  WorkoutCollectionMethods
->;
-
+export type WorkoutCollection = RxCollection<WorkoutDocType, {}, {}>;
 export type SettingsCollection = RxCollection<SettingsDocType, {}, {}>;
 
 export type WorkoutDatabaseCollections = {

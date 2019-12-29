@@ -7,19 +7,16 @@ import Backend from 'react-dnd-multi-backend';
 //@ts-ignore
 import HTML5toTouch from 'react-dnd-multi-backend/dist/esm/HTML5toTouch';
 import update from 'immutability-helper';
-import { Link } from 'react-router-dom';
 
 import { Container, Box } from '@material-ui/core';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
-import IconButton from '@material-ui/core/IconButton';
-import CloseIcon from '@material-ui/icons/Close';
 import { makeStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
 
 import { ExercisePicker } from '../components/ExercisePicker';
+import { BuilderNavbar as Navbar } from '../components/BuilderNavbar';
 import { useSettings } from '../hooks/settings';
 
 const useStyles = makeStyles(theme => ({
@@ -28,9 +25,6 @@ const useStyles = makeStyles(theme => ({
   },
   rest: {
     marginBottom: theme.spacing(3),
-  },
-  close: {
-    color: theme.palette.common.white,
   },
   form: {
     paddingTop: theme.spacing(2),
@@ -45,27 +39,10 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-function Navbar() {
-  const classes = useStyles();
-  return (
-    <React.Fragment>
-      <AppBar position="fixed">
-        <Toolbar>
-          <Link to="/" className={classes.close}>
-            <IconButton edge="start" color="inherit" aria-label="close">
-              <CloseIcon />
-            </IconButton>
-          </Link>
-          <Typography variant="h6">Workout Settings</Typography>
-        </Toolbar>
-      </AppBar>
-    </React.Fragment>
-  );
-}
-
 export function Builder() {
   const classes = useStyles();
-  const settings = useSettings();
+  const [tab, setTab] = React.useState(0);
+  const settings = useSettings(tab + '');
 
   const removeExercise = React.useCallback(
     (id: number) => {
@@ -141,15 +118,28 @@ export function Builder() {
   if (!settings)
     return (
       <Container className={classes.root}>
-        <Navbar />
+        <Navbar tab={tab} setTab={setTab} />
       </Container>
     );
 
   return (
     <DndProvider backend={Backend} options={HTML5toTouch}>
       <Container className={classes.root}>
-        <Navbar />
-        <form>
+        <Navbar tab={tab} setTab={setTab} />
+        <form style={settings.active ? {} : { opacity: 0.5 }}>
+          <Box marginTop={8}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={settings.active}
+                  onChange={event =>
+                    settings.update({ $set: { active: event.target.checked } })
+                  }
+                />
+              }
+              label="Active"
+            />
+          </Box>
           <Box display="inline-block" marginTop={2}>
             <TextField
               label="Rest between sets"
@@ -175,10 +165,10 @@ export function Builder() {
               updateExercise={updateExercise}
             />
           ))}
+          <Button color="primary" variant="contained" onClick={addExercise}>
+            New Exercise
+          </Button>
         </form>
-        <Button color="primary" variant="contained" onClick={addExercise}>
-          New Exercise
-        </Button>
       </Container>
     </DndProvider>
   );

@@ -4,7 +4,7 @@ import { RxDatabase } from 'rxdb';
 import { DBContext } from '../db';
 import { WorkoutDatabaseCollections, Settings } from '../types';
 
-export const useSettings = () => {
+export const useSettings = (id: string) => {
   const db: RxDatabase<WorkoutDatabaseCollections> | null = useContext(
     DBContext
   );
@@ -13,13 +13,14 @@ export const useSettings = () => {
   useEffect(() => {
     if (!db) return;
 
-    const query = db.settings.findOne().sort('id');
+    const query = db.settings.findOne({ id: id }).sort('id');
 
     const subscription = query.$.subscribe(result => {
       if (!result) {
         db.settings.insert({
-          id: '1',
+          id: id,
           rest: 30,
+          active: true,
           exercises: [
             {
               id: 1,
@@ -43,7 +44,7 @@ export const useSettings = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [db]);
+  }, [db, id]);
 
   return state ? state.settings : undefined;
 };

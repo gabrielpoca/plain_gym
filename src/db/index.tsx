@@ -5,17 +5,16 @@ import { format } from 'date-fns';
 import uuid from 'uuid/v4';
 import update from 'immutability-helper';
 
-import { setupSync } from './database/sync';
+import { setupSync } from './sync';
 
 import {
   Settings,
   SettingsDocType,
   WorkoutDocType,
   WorkoutDatabaseCollections,
-  WorkoutCollectionMethods,
-} from './types';
+} from '../types';
 
-import * as api from './api';
+import * as api from '../api';
 
 RxDB.plugin(PouchDBIDB);
 
@@ -25,6 +24,9 @@ const settingsJSONSchema: any = {
   },
   rest: {
     type: 'number',
+  },
+  active: {
+    type: 'boolean',
   },
   exercises: {
     type: 'array',
@@ -57,7 +59,6 @@ export const getDB = async () => {
     name: 'workouts',
     adapter: 'idb',
   });
-
   const workoutSchema: RxJsonSchema<WorkoutDocType> = {
     title: 'Workouts Schema',
     version: 0,
@@ -103,23 +104,9 @@ export const getDB = async () => {
     }),
   };
 
-  const workoutCollectionMethods: WorkoutCollectionMethods = {
-    startWorkout: async (settings: Settings) => {
-      return db.workouts.insert({
-        id: `workout-${uuid()}`,
-        date: format(new Date(), 'YYYY-MM-DD'),
-        exercises: {},
-        settings: settings.toJSON(),
-        state: 'ongoing',
-        modelType: 'workout',
-      });
-    },
-  };
-
   await db.collection({
     name: 'workouts',
     schema: workoutSchema,
-    statics: workoutCollectionMethods,
     migrationStrategies: {},
   });
 
@@ -138,6 +125,15 @@ export const getDB = async () => {
       .exec();
 
     if (ongoing) throw new Error('There is already an ongoing workout');
+  }, false);
+
+  db.settings.preSave(async (plainData: SettingsDocType) => {
+    if (plainData.active) return;
+
+    const actives = await db.settings.find({ active: true }).exec();
+
+    if (actives.length < 2)
+      throw new Error('There must be at least one active workout');
   }, false);
 
   return db;

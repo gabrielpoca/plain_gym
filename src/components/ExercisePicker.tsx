@@ -150,6 +150,7 @@ export function ExercisePicker({
       >
         <Grid item xs={12}>
           <Autocomplete
+            autoSelect
             options={exercisesList}
             getOptionLabel={option => option.name}
             style={{ maxWidth: 300 }}

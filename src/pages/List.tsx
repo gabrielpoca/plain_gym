@@ -23,6 +23,7 @@ import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
 import Container from '@material-ui/core/Container';
 
 import { DBContext } from '../db';
+import * as actions from '../db/actions';
 
 import { useWorkout, useWorkouts } from '../hooks/workouts';
 import { useSettings } from '../hooks/settings';
@@ -105,13 +106,12 @@ export function ListPage() {
   const classes = useStyles();
   const workouts = useWorkouts(db!);
   const ongoing = useWorkout(db!, filter);
-  const settings = useSettings();
 
   useEffect(() => {
-    if (!startWorkout || ongoing || !settings) return;
+    if (!startWorkout || ongoing || !db) return;
 
-    db!.workouts.startWorkout(settings);
-  }, [startWorkout, ongoing, db, settings]);
+    actions.startWorkout(db);
+  }, [startWorkout, ongoing, db]);
 
   if (startWorkout && ongoing)
     return <Redirect to={`/workouts/${ongoing.id}`} />;

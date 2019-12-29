@@ -29,7 +29,7 @@ export function NewNavbar({
   onDelete,
   title,
 }: {
-  onDelete: () => any;
+  onDelete?: () => any;
   title: string;
 }) {
   const [state, setState] = useState({
@@ -55,7 +55,9 @@ export function NewNavbar({
             aria-label="More"
             aria-owns={state.menuOpen ? 'long-menu' : undefined}
             aria-haspopup="true"
-            onClick={e => setState({ menuOpen: true, anchorEl: e.currentTarget })}
+            onClick={e =>
+              setState({ menuOpen: true, anchorEl: e.currentTarget })
+            }
           >
             <MoreVertIcon />
           </IconButton>
