@@ -21,6 +21,7 @@ import { useSettings } from '../hooks/settings';
 
 const useStyles = makeStyles(theme => ({
   root: {
+    padding: theme.spacing(4),
     paddingTop: theme.spacing(8),
   },
   rest: {
@@ -117,14 +118,14 @@ export function Builder() {
 
   if (!settings)
     return (
-      <Container className={classes.root}>
+      <Container disableGutters className={classes.root}>
         <Navbar tab={tab} setTab={setTab} />
       </Container>
     );
 
   return (
     <DndProvider backend={Backend} options={HTML5toTouch}>
-      <Container className={classes.root}>
+      <Container disableGutters className={classes.root}>
         <Navbar tab={tab} setTab={setTab} />
         <form style={settings.active ? {} : { opacity: 0.5 }}>
           <Box marginTop={8}>
@@ -133,7 +134,11 @@ export function Builder() {
                 <Switch
                   checked={settings.active}
                   onChange={event =>
-                    settings.update({ $set: { active: event.target.checked } })
+                    settings
+                      .update({ $set: { active: event.target.checked } })
+                      .catch(err => {
+                        console.log(err);
+                      })
                   }
                 />
               }
@@ -147,11 +152,13 @@ export function Builder() {
               type="number"
               helperText="in seconds"
               value={settings.rest}
-              onChange={event =>
+              onChange={event => {
+                const newValue = parseInt(event.target.value);
+
                 settings.update({
-                  $set: { rest: parseInt(event.target.value) },
-                })
-              }
+                  $set: { rest: !newValue || newValue < 0 ? 0 : newValue },
+                });
+              }}
               className={classes.rest}
             />
           </Box>

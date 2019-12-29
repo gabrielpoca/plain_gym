@@ -151,13 +151,15 @@ export function ExercisePicker({
         <Grid item xs={12}>
           <Autocomplete
             autoSelect
+            autoHighlight
+            autoComplete
             options={exercisesList}
             getOptionLabel={option => option.name}
             style={{ maxWidth: 300 }}
             value={find(exercises, { id: exerciseId })}
-            onChange={(_e, newValue) =>
-              updateExercise(index, { exerciseId: newValue.id })
-            }
+            onChange={(_e, newValue) => {
+              if (newValue) updateExercise(index, { exerciseId: newValue.id });
+            }}
             renderInput={(params: any) => (
               <TextField
                 {...params}
