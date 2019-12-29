@@ -1,5 +1,6 @@
 import uuid from 'uuid/v4';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
+import formatISO from 'date-fns/formatISO';
 
 import { WorkoutDatabaseCollections } from '../types';
 
@@ -32,7 +33,7 @@ export const startWorkout = async (db: WorkoutDatabaseCollections) => {
 
   return db.workouts.insert({
     id: `workout-${uuid()}`,
-    date: format(new Date(), 'YYYY-MM-DD'),
+    date: formatISO(new Date()) + format(new Date(), 'xxx'),
     exercises: {},
     settings: settings!.toJSON(),
     state: 'ongoing',

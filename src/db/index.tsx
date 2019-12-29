@@ -1,8 +1,6 @@
 import React, { useEffect, useState, FunctionComponent } from 'react';
 import RxDB, { RxJsonSchema, RxDatabase } from 'rxdb';
 import PouchDBIDB from 'pouchdb-adapter-idb';
-import { format } from 'date-fns';
-import uuid from 'uuid/v4';
 import update from 'immutability-helper';
 
 import { setupSync } from './sync';
@@ -76,7 +74,7 @@ export const getDB = async () => {
       date: {
         type: 'string',
         index: true,
-        format: 'date',
+        format: 'date-time',
       },
       settings: {
         type: 'object',
