@@ -3,9 +3,7 @@ import pick from 'lodash/pick';
 import range from 'lodash/range';
 import React from 'react';
 import { DndProvider } from 'react-dnd';
-import Backend from 'react-dnd-multi-backend';
-//@ts-ignore
-import HTML5toTouch from 'react-dnd-multi-backend/dist/esm/HTML5toTouch';
+import Backend from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
 
 import { Container, Box } from '@material-ui/core';
@@ -124,7 +122,7 @@ export function Builder() {
     );
 
   return (
-    <DndProvider backend={Backend} options={HTML5toTouch}>
+    <DndProvider backend={Backend}>
       <Container disableGutters className={classes.root}>
         <Navbar tab={tab} setTab={setTab} />
         <form style={settings.active ? {} : { opacity: 0.5 }}>
