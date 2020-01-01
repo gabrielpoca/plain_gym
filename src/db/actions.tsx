@@ -23,7 +23,7 @@ const findNextSettings = async (
 export const startWorkout = async (db: WorkoutDatabaseCollections) => {
   const lastWorkout = await db.workouts
     .findOne()
-    .sort('date')
+    .sort({ date: 'desc' })
     .exec();
 
   const settings = await findNextSettings(
