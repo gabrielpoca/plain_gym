@@ -76,11 +76,10 @@ export function WorkoutExercise({
               const setId = `${id}-${time}`;
 
               return (
-                <Grid item>
+                <Grid key={time} item>
                   <WorkoutSet
                     disabled={!!disabled}
                     selected={selectedExerciseSet === setId}
-                    key={time}
                     reps={multi ? reps[time] : reps[0]}
                     completedReps={get(completedReps, time)}
                     onClick={() => onClick && onClick({ set: time, setId })}
