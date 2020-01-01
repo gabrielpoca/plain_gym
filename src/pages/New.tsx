@@ -2,9 +2,12 @@
 import { jsx } from '@emotion/core';
 import get from 'lodash/get';
 import merge from 'lodash/merge';
-import React, { useReducer, useContext } from 'react';
+import React, { useContext } from 'react';
 import { Redirect } from 'react-router-dom';
 import update from 'immutability-helper';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { scan } from 'rxjs/operators';
+import { useObservable } from 'rxjs-hooks';
 
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
@@ -27,6 +30,10 @@ type FinishSetAction = {
   type: 'finishSet';
   setId: string;
   rest: number;
+};
+
+type StopAction = {
+  type: 'stop';
 };
 
 interface NewProps {
@@ -55,6 +62,12 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+const initialState = {
+  selectedStart: new Date(),
+  selectedEnd: new Date(),
+  selectedExerciseSet: '',
+};
+
 function getStartAndEndDate(rest: number) {
   const selectedStart = new Date();
   const selectedEnd = new Date();
@@ -63,7 +76,10 @@ function getStartAndEndDate(rest: number) {
   return [selectedStart, selectedEnd];
 }
 
-function reducer(state: ReducerState, action: FinishSetAction): ReducerState {
+function reducer(
+  state: ReducerState,
+  action: FinishSetAction | StopAction
+): ReducerState {
   switch (action.type) {
     case 'finishSet': {
       if (state.selectedExerciseSet === action.setId) return state;
@@ -76,20 +92,24 @@ function reducer(state: ReducerState, action: FinishSetAction): ReducerState {
         selectedExerciseSet: action.setId,
       });
     }
+    case 'stop': {
+      return initialState;
+    }
     default:
+      console.log('jelrkwkslkf');
       throw new Error();
   }
 }
+
+const state$ = new BehaviorSubject(initialState);
+const actions$ = new Subject<FinishSetAction | StopAction>();
+actions$.pipe(scan(reducer, initialState)).subscribe(state$);
 
 export const New = ({ id }: NewProps) => {
   const classes = useStyles();
   const db = useContext(DBContext);
   const workout = useWorkout(db!, id)!;
-  const [state, dispatch] = useReducer(reducer, {
-    selectedStart: new Date(),
-    selectedEnd: new Date(),
-    selectedExerciseSet: '',
-  });
+  const state = useObservable(() => state$, initialState, []);
 
   const updateSet = React.useCallback(
     (set: number, setId: string, exercise: SettingsExercise) => {
@@ -119,7 +139,7 @@ export const New = ({ id }: NewProps) => {
         }),
       });
 
-      dispatch({
+      actions$.next({
         type: 'finishSet',
         setId,
         rest: workout.settings.rest,
@@ -164,7 +184,10 @@ export const New = ({ id }: NewProps) => {
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => workout.update({ $set: { state: 'cancelled' } })}
+          onClick={() => {
+            actions$.next({ type: 'stop' });
+            workout.update({ $set: { state: 'cancelled' } });
+          }}
           css={{ marginRight: 20 }}
         >
           Cancel
@@ -172,7 +195,10 @@ export const New = ({ id }: NewProps) => {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => workout.update({ $set: { state: 'completed' } })}
+          onClick={() => {
+            actions$.next({ type: 'stop' });
+            workout.update({ $set: { state: 'completed' } });
+          }}
         >
           Finish
         </Button>
