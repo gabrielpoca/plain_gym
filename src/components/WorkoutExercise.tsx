@@ -10,6 +10,7 @@ import Typography from '@material-ui/core/Typography';
 
 import { exercises } from '../exercises';
 import { WorkoutSet } from './WorkoutSet';
+import { Grid } from '@material-ui/core';
 
 const useStyles = makeStyles(theme => ({
   exercise: {
@@ -70,20 +71,24 @@ export function WorkoutExercise({
             padding: 0,
           }}
         >
-          {times(sets).map(time => {
-            const setId = `${id}-${time}`;
+          <Grid container spacing={1}>
+            {times(sets).map(time => {
+              const setId = `${id}-${time}`;
 
-            return (
-              <WorkoutSet
-                disabled={!!disabled}
-                selected={selectedExerciseSet === setId}
-                key={time}
-                reps={multi ? reps[time] : reps[0]}
-                completedReps={get(completedReps, time)}
-                onClick={() => onClick && onClick({ set: time, setId })}
-              />
-            );
-          })}
+              return (
+                <Grid item>
+                  <WorkoutSet
+                    disabled={!!disabled}
+                    selected={selectedExerciseSet === setId}
+                    key={time}
+                    reps={multi ? reps[time] : reps[0]}
+                    completedReps={get(completedReps, time)}
+                    onClick={() => onClick && onClick({ set: time, setId })}
+                  />
+                </Grid>
+              );
+            })}
+          </Grid>
         </ol>
       </Paper>
     </li>
