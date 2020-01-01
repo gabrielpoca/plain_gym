@@ -19,7 +19,7 @@ import { useSettings } from '../hooks/settings';
 
 const useStyles = makeStyles(theme => ({
   root: {
-    padding: theme.spacing(4),
+    padding: theme.spacing(2),
     paddingTop: theme.spacing(8),
   },
   rest: {
